@@ -6,6 +6,6 @@ These are solutions to the problems in [Advent of Code 2018](https://adventofcod
 Feedback in the form of [issues](https://github.com/fornwall/advent-of-code-2018-rs/issues/new) or pull requests are welcome!
 
 # Days
-| Day                                            | Solution                     |
-| ---------------------------------------------- | ---------------------------- |
-| [Day 1](https://adventofcode.com/2018/day/1)   | [src/day1.rs](src/day1.rs)   |
+| Puzzle                                         | Solution                     | Alternatives |
+| ---------------------------------------------- | ---------------------------- | ------------ |
+| [Day 1](https://adventofcode.com/2018/day/1)   | [src/day1.rs](src/day1.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a20646/2018_day_1_solutions/) |
