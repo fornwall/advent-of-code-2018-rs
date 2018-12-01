@@ -3,7 +3,7 @@
 # Advent of Code 2018 in Rust
 These are solutions to the problems in [Advent of Code 2018](https://adventofcode.com/2018) in Rust.
 
-Feedback in the form of [issues](issues/new) or [pull requests](compare/) are welcome!
+Feedback in the form of [issues](https://github.com/fornwall/advent-of-code-2018-rs/issues/new) or pull requests are welcome!
 
 # Days
 | Day                                            | Solution                     |
