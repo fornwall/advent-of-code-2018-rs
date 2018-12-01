@@ -8,21 +8,18 @@ pub fn solve() {
     println!("Part 2: {}", result_part2);
 }
 
-fn parse_word(word: &str) -> i32 {
-    let sign = match word.chars().next().unwrap() {
-        '+' => 1,
-        '-' => -1,
-        _ => panic!("Unexpected word: {}", word),
-    };
-    sign * (word[1..]).parse::<i32>().unwrap()
-}
-
 fn evaluate_part1(input_string: &str) -> i32 {
-    input_string.split_whitespace().map(parse_word).sum()
+    input_string
+        .lines()
+        .map(|w| w.parse::<i32>().unwrap())
+        .sum()
 }
 
 fn evaluate_part2(input_string: &str) -> i32 {
-    let input: Vec<i32> = input_string.split_whitespace().map(parse_word).collect();
+    let input: Vec<i32> = input_string
+        .lines()
+        .map(|w| w.parse::<i32>().unwrap())
+        .collect();
 
     let mut i = 0;
     let mut frequency = 0;
