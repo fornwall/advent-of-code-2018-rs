@@ -50,8 +50,27 @@ fn evaluate_part1(input_string: &str) -> i64 {
     occurrences.0 * occurrences.1
 }
 
-fn evaluate_part2(_: &str) -> i32 {
-    1
+fn evaluate_part2(input_string: &str) -> String {
+    let input: Vec<&str> = input_string.split_whitespace().collect();
+
+    for i in 0..input.len() {
+        for j in i + 1..input.len() {
+            let s1 = input[i];
+            let s2 = input[j];
+
+            let without_diffs = s1
+                .chars()
+                .zip(s2.chars())
+                .filter(|pair| pair.0 == pair.1)
+                .map(|pair| pair.0)
+                .collect::<String>();
+
+            if without_diffs.len() == s1.len() - 1 {
+                return without_diffs;
+            }
+        }
+    }
+    panic!("No solution found");
 }
 
 #[test]
@@ -72,10 +91,18 @@ ababab
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
-    assert_eq!(0, evaluate_part2(""));
-    assert_eq!(0, evaluate_part2(""));
-    assert_eq!(0, evaluate_part2(""));
-    assert_eq!(0, evaluate_part2(""));
+    assert_eq!(
+        "fgij",
+        evaluate_part2(
+            "abcde
+fghij
+klmno
+pqrst
+fguij
+axcye
+wvxyz
+"
+        )
+    );
 }
