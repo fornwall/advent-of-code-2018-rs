@@ -2,3 +2,6 @@
 name = "advent-of-code-2018"
 version = "0.1.0"
 authors = ["Fredrik Fornwall <fredrik@fornwall.net>"]
+
+[profile.release]
+lto = true
