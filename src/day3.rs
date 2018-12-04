@@ -49,29 +49,31 @@ impl Fabric {
     }
 }
 
+fn parse_input<'a>(input_string: &'a str) -> impl Iterator<Item = Claim> + 'a {
+    input_string.lines().map(|line| {
+        let parts: Vec<u32> = line
+            .replace("#", "")
+            .replace("@", "")
+            .replace(",", " ")
+            .replace(":", "")
+            .replace("x", " ")
+            .split_whitespace()
+            .map(|s| s.parse::<u32>().unwrap())
+            .collect();
+        Claim {
+            id: parts[0],
+            x: parts[1],
+            y: parts[2],
+            width: parts[3],
+            height: parts[4],
+        }
+    })
+}
+
 fn evaluate_part1(input_string: &str) -> usize {
     let mut fabric = Fabric::new();
 
-    input_string
-        .lines()
-        .map(|line| {
-            let parts: Vec<u32> = line
-                .replace("#", "")
-                .replace("@", "")
-                .replace(",", " ")
-                .replace(":", "")
-                .replace("x", " ")
-                .split_whitespace()
-                .map(|s| s.parse::<u32>().unwrap())
-                .collect();
-            Claim {
-                id: parts[0],
-                x: parts[1],
-                y: parts[2],
-                width: parts[3],
-                height: parts[4],
-            }
-        }).for_each(|claim| fabric.add_claim(&claim));
+    parse_input(input_string).for_each(|claim| fabric.add_claim(&claim));
 
     fabric.inches_claimed_multiple()
 }
@@ -79,27 +81,7 @@ fn evaluate_part1(input_string: &str) -> usize {
 fn evaluate_part2(input_string: &str) -> u32 {
     let mut fabric = Fabric::new();
 
-    let claims: Vec<Claim> = input_string
-        .lines()
-        .map(|line| {
-            let parts: Vec<u32> = line
-                .replace("#", "")
-                .replace("@", "")
-                .replace(",", " ")
-                .replace(":", "")
-                .replace("x", " ")
-                .split_whitespace()
-                .map(|s| s.parse::<u32>().unwrap())
-                .collect();
-
-            Claim {
-                id: parts[0],
-                x: parts[1],
-                y: parts[2],
-                width: parts[3],
-                height: parts[4],
-            }
-        }).collect();
+    let claims: Vec<Claim> = parse_input(input_string).collect();
 
     claims.iter().for_each(|claim| fabric.add_claim(claim));
 
