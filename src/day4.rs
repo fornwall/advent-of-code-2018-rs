@@ -1,14 +1,5 @@
 use std::collections::HashMap;
 
-pub fn solve() {
-    let input_string = include_str!("day4_input.txt");
-    let result_part1 = evaluate_part1(input_string);
-    let result_part2 = evaluate_part2(input_string);
-
-    println!("Part 1: {}", result_part1);
-    println!("Part 2: {}", result_part2);
-}
-
 enum EntryType {
     BeginShift { guard_id: u32 },
     FallsAsleep,
@@ -57,7 +48,7 @@ fn parse_input(input_string: &str) -> Vec<LogEntry> {
     entries
 }
 
-fn evaluate_part1(input_string: &str) -> u64 {
+pub fn part1(input_string: &str) -> String {
     let entries = parse_input(input_string);
 
     let mut sleepers = HashMap::new();
@@ -103,10 +94,10 @@ fn evaluate_part1(input_string: &str) -> u64 {
         .unwrap()
         .0 as u64;
 
-    u64::from(most_sleepy_guard) * most_sleepy_minute
+    (u64::from(most_sleepy_guard) * most_sleepy_minute).to_string()
 }
 
-fn evaluate_part2(input_string: &str) -> u64 {
+pub fn part2(input_string: &str) -> String {
     let entries = parse_input(input_string);
 
     let mut sleepers = HashMap::new();
@@ -138,14 +129,14 @@ fn evaluate_part2(input_string: &str) -> u64 {
         }).max_by_key(|(_, _, sleep_count)| *sleep_count)
         .unwrap();
 
-    u64::from(guard_id) * most_sleepy_minute as u64
+    (u64::from(guard_id) * most_sleepy_minute as u64).to_string()
 }
 
 #[test]
 fn tests_part1() {
     assert_eq!(
-        240,
-        evaluate_part1(
+        "240",
+        part1(
             "[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
@@ -165,13 +156,15 @@ fn tests_part1() {
 [1518-11-05 00:55] wakes up"
         )
     );
+
+    assert_eq!("84834", part1(include_str!("day4_input.txt")));
 }
 
 #[test]
 fn tests_part2() {
     assert_eq!(
-        4455,
-        evaluate_part2(
+        "4455",
+        part2(
             "[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
@@ -191,4 +184,6 @@ fn tests_part2() {
 [1518-11-05 00:55] wakes up"
         )
     );
+
+    assert_eq!("53427", part2(include_str!("day4_input.txt")));
 }

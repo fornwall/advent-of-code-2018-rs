@@ -1,12 +1,3 @@
-pub fn solve() {
-    let input_string = include_str!("day3_input.txt");
-    let result_part1 = evaluate_part1(input_string);
-    let result_part2 = evaluate_part2(input_string);
-
-    println!("Part 1: {}", result_part1);
-    println!("Part 2: {}", result_part2);
-}
-
 struct Fabric {
     num_claims: Vec<u32>,
 }
@@ -70,15 +61,15 @@ fn parse_input<'a>(input_string: &'a str) -> impl Iterator<Item = Claim> + 'a {
     })
 }
 
-fn evaluate_part1(input_string: &str) -> usize {
+pub fn part1(input_string: &str) -> String {
     let mut fabric = Fabric::new();
 
     parse_input(input_string).for_each(|claim| fabric.add_claim(&claim));
 
-    fabric.inches_claimed_multiple()
+    fabric.inches_claimed_multiple().to_string()
 }
 
-fn evaluate_part2(input_string: &str) -> u32 {
+pub fn part2(input_string: &str) -> String {
     let mut fabric = Fabric::new();
 
     let claims: Vec<Claim> = parse_input(input_string).collect();
@@ -90,28 +81,33 @@ fn evaluate_part2(input_string: &str) -> u32 {
         .find(|claim| fabric.is_claimed_once(claim))
         .expect("No result found")
         .id
+        .to_string()
 }
 
 #[test]
 fn tests_part1() {
     assert_eq!(
-        4,
-        evaluate_part1(
+        "4",
+        part1(
             "#1 @ 1,3: 4x4
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2"
         )
     );
+
+    assert_eq!("104126", part1(include_str!("day3_input.txt")));
 }
 
 #[test]
 fn tests_part2() {
     assert_eq!(
-        3,
-        evaluate_part2(
+        "3",
+        part2(
             "#1 @ 1,3: 4x4
 #2 @ 3,1: 4x4
 #3 @ 5,5: 2x2"
         )
     );
+
+    assert_eq!("695", part2(include_str!("day3_input.txt")));
 }
