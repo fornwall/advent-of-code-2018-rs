@@ -3,7 +3,19 @@
 # Advent of Code 2018 in Rust
 These are solutions to the problems in [Advent of Code 2018](https://adventofcode.com/2018) in Rust.
 
-Feedback in the form of [issues](https://github.com/fornwall/advent-of-code-2018-rs/issues/new) or pull requests are welcome!
+# Running the solutions against a file
+The test can be run to read from stdin with
+
+    cargo run <day> <part> < path/to/input.txt
+    # Example:
+    cargo run 2 1 < path/to/input_day2_part1.txt
+
+There is also a Docker image published for running the tests:
+
+    docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2 < path/to/input.txt
+    # Example
+    curl https://public.infinisil.com/aoc18/day2/10000.txt | \
+        docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2 < path/to/input.txt
 
 # Days
 | Puzzle                                         | Solution                     | Alternatives |
