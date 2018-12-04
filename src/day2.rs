@@ -26,13 +26,15 @@ pub fn part2(input_string: &str) -> String {
             let s1 = input[i];
             let s2 = input[j];
 
-            let diffs = s1.chars()
+            let diffs = s1
+                .chars()
                 .zip(s2.chars())
                 .filter(|(c1, c2)| c1 != c2)
                 .count();
 
             if diffs == 1 {
-                return s1.chars()
+                return s1
+                    .chars()
                     .zip(s2.chars())
                     .filter(|pair| pair.0 == pair.1)
                     .map(|pair| pair.0)
