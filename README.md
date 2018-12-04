@@ -15,7 +15,7 @@ There is also a Docker image published for running the tests:
     docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2 < path/to/input.txt
     # Example
     curl https://public.infinisil.com/aoc18/day2/10000.txt | \
-        docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2 < path/to/input.txt
+        docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2
 
 # Days
 | Puzzle                                         | Solution                     | Alternatives |
