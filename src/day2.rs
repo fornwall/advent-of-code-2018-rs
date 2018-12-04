@@ -16,11 +16,11 @@ fn evaluate_part1(input_string: &str) -> i64 {
         line.chars()
             .for_each(|c| *occurrences.entry(c).or_insert(0) += 1);
 
-        let has_occurence = |count| occurrences.iter().any(|(_key, &value)| value == count);
+        let has_occurrence = |count| occurrences.iter().any(|(_key, &value)| value == count);
 
         (
-            state.0 + has_occurence(2) as i64,
-            state.1 + has_occurence(3) as i64,
+            state.0 + has_occurrence(2) as i64,
+            state.1 + has_occurrence(3) as i64,
         )
     });
 
