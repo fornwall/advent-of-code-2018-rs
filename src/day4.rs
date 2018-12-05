@@ -7,22 +7,17 @@ enum EntryType {
 }
 
 struct LogEntry {
-    time: u64,
     minute: u32,
     entry: EntryType,
 }
 
 fn parse_input(input_string: &str) -> Vec<LogEntry> {
-    let mut entries: Vec<LogEntry> = input_string
-        .lines()
-        .map(|line| {
-            let time = line[1..17] // The part inside brackets in [1518-11-02 00:40].
-                .replace("-", "")
-                .replace(":", "")
-                .replace(" ", "")
-                .parse::<u64>()
-                .unwrap();
+    let mut lines: Vec<&str> = input_string.lines().collect();
+    lines.sort();
 
+    lines
+        .iter()
+        .map(|line| {
             let parts: Vec<&str> = line.split_whitespace().collect();
 
             let minute = parts[1][3..5].parse().unwrap();
@@ -36,16 +31,8 @@ fn parse_input(input_string: &str) -> Vec<LogEntry> {
                 _ => panic!("Invalid line"),
             };
 
-            LogEntry {
-                time,
-                minute,
-                entry,
-            }
-        }).collect();
-
-    entries.sort_by_key(|entry| entry.time);
-
-    entries
+            LogEntry { minute, entry }
+        }).collect()
 }
 
 pub fn part1(input_string: &str) -> String {
