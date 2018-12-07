@@ -44,7 +44,8 @@ mod tests {
             .scan(0, |frequency, change| {
                 *frequency += change;
                 Some(*frequency)
-            }).find(|frequency| !seen_frequencies.insert(*frequency))
+            })
+            .find(|frequency| !seen_frequencies.insert(*frequency))
             .unwrap()
             .to_string()
     }

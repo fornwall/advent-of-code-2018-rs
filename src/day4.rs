@@ -32,7 +32,8 @@ fn parse_input(input_string: &str) -> Vec<LogEntry> {
             };
 
             LogEntry { minute, entry }
-        }).collect()
+        })
+        .collect()
 }
 
 pub fn part1(input_string: &str) -> String {
@@ -113,7 +114,8 @@ pub fn part2(input_string: &str) -> String {
                 .max_by_key(|(_minute, count)| *count)
                 .unwrap();
             (guard_id, most_sleepy_minute, sleep_count)
-        }).max_by_key(|(_, _, sleep_count)| *sleep_count)
+        })
+        .max_by_key(|(_, _, sleep_count)| *sleep_count)
         .unwrap();
 
     (u64::from(guard_id) * most_sleepy_minute as u64).to_string()

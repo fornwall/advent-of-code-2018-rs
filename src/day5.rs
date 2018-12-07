@@ -100,7 +100,8 @@ pub fn part2(input: &str) -> String {
             } else {
                 shortest_length
             }
-        }).to_string()
+        })
+        .to_string()
 }
 
 #[test]
