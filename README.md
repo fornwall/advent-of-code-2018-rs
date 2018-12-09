@@ -24,3 +24,5 @@ There is also a Docker image published for running the tests:
 | [Day 2](https://adventofcode.com/2018/day/2)   | [src/day2.rs](src/day2.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a2aimr/2018_day_2_solutions/)
 | [Day 3](https://adventofcode.com/2018/day/3)   | [src/day3.rs](src/day3.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a2lesz/2018_day_3_solutions/)
 | [Day 4](https://adventofcode.com/2018/day/4)   | [src/day4.rs](src/day4.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a2xef8/2018_day_4_solutions/)
+| [Day 5](https://adventofcode.com/2018/day/5)   | [src/day5.rs](src/day5.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a3912m/2018_day_5_solutions/)
+| [Day 6](https://adventofcode.com/2018/day/6)   | [src/day6.rs](src/day6.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a3kr4r/2018_day_6_solutions/)
