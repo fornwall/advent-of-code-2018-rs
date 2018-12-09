@@ -8,6 +8,7 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
 
 fn main() {
     if let Some(day) = env::args().nth(1) {
@@ -45,6 +46,7 @@ fn get_problem_set(day: &str, part: &str) -> fn(&str) -> String {
         "5" => Solutions(day5::part1, day5::part2),
         "6" => Solutions(day6::part1, day6::part2),
         "7" => Solutions(day7::part1, day7::part2),
+        "8" => Solutions(day8::part1, day8::part2),
         _ => {
             println!("No such day: {}", day);
             std::process::exit(1);
