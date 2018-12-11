@@ -4,18 +4,30 @@
 These are solutions to the problems in [Advent of Code 2018](https://adventofcode.com/2018) in Rust.
 
 # Running the solutions against a file
-The test can be run to read from stdin with
+The test can be run to read from stdin:
 
     cargo run <day> <part> < path/to/input.txt
+
     # Example:
     cargo run 2 1 < path/to/input_day2_part1.txt
 
+# Running using Docker
 There is also a Docker image published for running the tests:
 
-    docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2 < path/to/input.txt
+    docker run -i fredrikfornwall/advent-of-code-2018-rs:latest <day> <part> < path/to/input.txt
+
     # Example
     curl https://public.infinisil.com/aoc18/day2/10000.txt | \
         docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2
+
+# Running using Node.js
+As a proof of concept, an [npm module](https://www.npmjs.com/package/advent_of_code_rs) is available which uses WebAssembly to execute the solution:
+
+    # Installation:
+    npm install advent_of_code_rs_bin -g
+
+    # Invocation:
+    advent-of-code-rs <day> <part> < path/to/input.txt
 
 # Days
 | Puzzle                                         | Solution                     | Alternatives |

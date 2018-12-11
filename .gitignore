@@ -1,4 +1,11 @@
 /target
 **/*.rs.bk
 *.swp
+*.log
+*.wasm
 /.idea/
+dist/
+/pkg/
+/bin/
+node_modules
+/node/pkg-browser/
