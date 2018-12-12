@@ -5,7 +5,10 @@
 *.wasm
 /.idea/
 dist/
-/pkg/
 /bin/
 node_modules
-/node/pkg-browser/
+
+/wasm/advent_of_code_rs_bin/package.json
+/wasm/advent_of_code_rs_bin/package-lock.json
+/wasm/html/dist
+/wasm/html/package-lock.json

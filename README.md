@@ -29,6 +29,9 @@ As a proof of concept, an [npm module](https://www.npmjs.com/package/advent_of_c
     # Invocation:
     advent-of-code-rs <day> <part> < path/to/input.txt
 
+# Running in the browser
+As another proof of concept the solution can run inside the browser at https://fornwall.net/advent-of-code-2018/.
+
 # Days
 | Puzzle                                         | Solution                     | Alternatives |
 | ---------------------------------------------- | ---------------------------- | ------------ |
@@ -41,3 +44,5 @@ As a proof of concept, an [npm module](https://www.npmjs.com/package/advent_of_c
 | [Day 7](https://adventofcode.com/2018/day/7)   | [src/day7.rs](src/day7.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a3wmnl/2018_day_7_solutions/)
 | [Day 8](https://adventofcode.com/2018/day/8)   | [src/day8.rs](src/day8.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a47ubw/2018_day_8_solutions/)
 | [Day 9](https://adventofcode.com/2018/day/9)   | [src/day9.rs](src/day9.rs)   | [Reddit](https://www.reddit.com/r/adventofcode/comments/a4i97s/2018_day_9_solutions/)
+| [Day 10](https://adventofcode.com/2018/day/10) | [src/day10.rs](src/day10.rs) | [Reddit](https://www.reddit.com/r/adventofcode/comments/a4skra/2018_day_10_solutions/)
+| [Day 11](https://adventofcode.com/2018/day/11) | [src/day11.rs](src/day11.rs) | [Reddit](https://www.reddit.com/r/adventofcode/comments/a53r6i/2018_day_11_solutions/)
