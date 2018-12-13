@@ -22,18 +22,29 @@ struct Vector {
 }
 
 impl Vector {
-    fn rotate_with(&mut self, matrix: &RotationMatrix) {
-        let old_x = self.x;
-        self.x = self.x * matrix.0 + self.y * matrix.1;
-        self.y = old_x * matrix.2 + self.y * matrix.3;
-    }
     fn add(&mut self, other: Vector) {
         self.x += other.x;
         self.y += other.y;
     }
+    fn turn_left(&mut self) {
+        if self.x == 0 {
+            self.x = self.y;
+            self.y = 0;
+        } else {
+            self.y = -self.x;
+            self.x = 0;
+        }
+    }
+    fn turn_right(&mut self) {
+        if self.x == 0 {
+            self.x = -self.y;
+            self.y = 0;
+        } else {
+            self.y = self.x;
+            self.x = 0;
+        }
+    }
 }
-
-struct RotationMatrix(i32, i32, i32, i32);
 
 struct Cart {
     direction: Vector,
@@ -42,8 +53,62 @@ struct Cart {
 }
 
 impl Cart {
+    fn new(position: Vector, direction_x: i32, direction_y: i32) -> Cart {
+        Cart {
+            direction: Vector {
+                x: direction_x,
+                y: direction_y,
+            },
+            turns: 0,
+            position,
+        }
+    }
     fn advance(&mut self) {
         self.position.add(self.direction);
+    }
+
+    fn on_enter(&mut self, piece: &TrackPiece) {
+        match *piece {
+            TrackPiece::TopRight => {
+                self.direction = Vector {
+                    x: self.direction.y,
+                    y: self.direction.x,
+                };
+            }
+            TrackPiece::TopLeft => {
+                self.direction = Vector {
+                    x: -self.direction.y,
+                    y: -self.direction.x,
+                };
+            }
+            TrackPiece::BottomLeft => {
+                self.direction = Vector {
+                    x: self.direction.y,
+                    y: self.direction.x,
+                };
+            }
+            TrackPiece::BottomRight => {
+                self.direction = Vector {
+                    x: -self.direction.y,
+                    y: -self.direction.x,
+                };
+            }
+            TrackPiece::Intersection => {
+                match self.turns {
+                    0 => {
+                        self.direction.turn_left();
+                    }
+                    2 => {
+                        self.direction.turn_right();
+                    }
+                    _ => {}
+                };
+                self.turns = (self.turns + 1) % 3;
+            }
+            _ => {
+                // Do nothing.
+            }
+        }
     }
 }
 
@@ -65,32 +130,16 @@ impl Track {
                 };
                 match c {
                     '^' => {
-                        carts.push(Cart {
-                            direction: Vector { x: 0, y: -1 },
-                            turns: 0,
-                            position,
-                        });
+                        carts.push(Cart::new(position, 0, -1));
                     }
                     'v' => {
-                        carts.push(Cart {
-                            direction: Vector { x: 0, y: 1 },
-                            turns: 0,
-                            position,
-                        });
+                        carts.push(Cart::new(position, 0, 1));
                     }
                     '<' => {
-                        carts.push(Cart {
-                            direction: Vector { x: -1, y: 0 },
-                            turns: 0,
-                            position,
-                        });
+                        carts.push(Cart::new(position, -1, 0));
                     }
                     '>' => {
-                        carts.push(Cart {
-                            direction: Vector { x: 1, y: 0 },
-                            turns: 0,
-                            position,
-                        });
+                        carts.push(Cart::new(position, 1, 0));
                     }
                     '+' => {
                         track.insert(position, TrackPiece::Intersection);
@@ -145,9 +194,6 @@ impl Track {
     }
 
     fn find_crash(&mut self) -> Vector {
-        let left_matrix = RotationMatrix(0, 1, -1, 0);
-        let identity_matrix = RotationMatrix(1, 0, 0, 1);
-        let right_matrix = RotationMatrix(0, -1, 1, 0);
         loop {
             self.carts.sort_by(|a, b| a.position.cmp(&b.position));
 
@@ -160,52 +206,14 @@ impl Track {
                     return cart.position;
                 }
 
-                match self.track.get(&cart.position) {
-                    Some(TrackPiece::TopRight) => {
-                        cart.direction = Vector {
-                            x: cart.direction.y,
-                            y: cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::TopLeft) => {
-                        cart.direction = Vector {
-                            x: -cart.direction.y,
-                            y: -cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::BottomLeft) => {
-                        cart.direction = Vector {
-                            x: cart.direction.y,
-                            y: cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::BottomRight) => {
-                        cart.direction = Vector {
-                            x: -cart.direction.y,
-                            y: -cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::Intersection) => {
-                        cart.direction.rotate_with(match cart.turns {
-                            0 => &left_matrix,
-                            2 => &right_matrix,
-                            _ => &identity_matrix,
-                        });
-                        cart.turns = (cart.turns + 1) % 3;
-                    }
-                    _ => {
-                        // Do nothing.
-                    }
+                if let Some(piece) = self.track.get(&cart.position) {
+                    cart.on_enter(piece);
                 }
             }
         }
     }
 
     fn find_remaining(&mut self) -> Vector {
-        let left_matrix = RotationMatrix(0, 1, -1, 0);
-        let identity_matrix = RotationMatrix(1, 0, 0, 1);
-        let right_matrix = RotationMatrix(0, -1, 1, 0);
-
         loop {
             self.carts.sort_by(|a, b| a.position.cmp(&b.position));
 
@@ -230,42 +238,8 @@ impl Track {
                     }
                 };
 
-                match self.track.get(&cart.position) {
-                    Some(TrackPiece::TopRight) => {
-                        cart.direction = Vector {
-                            x: cart.direction.y,
-                            y: cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::TopLeft) => {
-                        cart.direction = Vector {
-                            x: -cart.direction.y,
-                            y: -cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::BottomLeft) => {
-                        cart.direction = Vector {
-                            x: cart.direction.y,
-                            y: cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::BottomRight) => {
-                        cart.direction = Vector {
-                            x: -cart.direction.y,
-                            y: -cart.direction.x,
-                        };
-                    }
-                    Some(TrackPiece::Intersection) => {
-                        cart.direction.rotate_with(match cart.turns {
-                            0 => &left_matrix,
-                            2 => &right_matrix,
-                            _ => &identity_matrix,
-                        });
-                        cart.turns = (cart.turns + 1) % 3;
-                    }
-                    _ => {
-                        // Do nothing.
-                    }
+                if let Some(piece) = self.track.get(&cart.position) {
+                    cart.on_enter(piece);
                 }
             }
 
