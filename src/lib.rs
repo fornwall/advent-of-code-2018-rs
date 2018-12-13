@@ -6,6 +6,7 @@ use wasm_bindgen::prelude::*;
 mod day1;
 mod day10;
 mod day11;
+mod day12;
 mod day2;
 mod day3;
 mod day4;
@@ -30,6 +31,7 @@ pub fn get_problem_set(day: u8, part: u8) -> Option<fn(&str) -> String> {
         9 => Solutions(day9::part1, day9::part2),
         10 => Solutions(day10::part1, day10::part2),
         11 => Solutions(day11::part1, day11::part2),
+        12 => Solutions(day12::part1, day12::part2),
         _ => {
             return None;
         }
