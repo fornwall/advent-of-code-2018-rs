@@ -8,7 +8,19 @@ mod day10;
 mod day11;
 mod day12;
 mod day13;
+mod day14;
+mod day15;
+mod day16;
+mod day17;
+mod day18;
+mod day19;
 mod day2;
+mod day20;
+mod day21;
+mod day22;
+mod day23;
+mod day24;
+mod day25;
 mod day3;
 mod day4;
 mod day5;
@@ -34,6 +46,18 @@ pub fn get_problem_set(day: u8, part: u8) -> Option<fn(&str) -> String> {
         11 => Solutions(day11::part1, day11::part2),
         12 => Solutions(day12::part1, day12::part2),
         13 => Solutions(day13::part1, day13::part2),
+        14 => Solutions(day14::part1, day14::part2),
+        15 => Solutions(day15::part1, day15::part2),
+        16 => Solutions(day16::part1, day16::part2),
+        17 => Solutions(day17::part1, day17::part2),
+        18 => Solutions(day18::part1, day18::part2),
+        19 => Solutions(day19::part1, day19::part2),
+        20 => Solutions(day20::part1, day20::part2),
+        21 => Solutions(day21::part1, day21::part2),
+        22 => Solutions(day22::part1, day22::part2),
+        23 => Solutions(day23::part1, day23::part2),
+        24 => Solutions(day24::part1, day24::part2),
+        25 => Solutions(day25::part1, day25::part2),
         _ => {
             return None;
         }
