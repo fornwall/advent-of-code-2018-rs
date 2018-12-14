@@ -2,16 +2,12 @@ pub fn part1(input_string: &str) -> String {
     let input_number = input_string.parse::<usize>().unwrap();
     let desired_length = input_number + 10;
 
-    let mut scores = Vec::new();
-    scores.push(3_u8);
-    scores.push(7_u8);
-
-    let mut elf_positions = Vec::new();
-    elf_positions.push(0);
-    elf_positions.push(1);
+    let mut scores = vec![3_u8, 7_u8];
+    let mut elf_positions = vec![0, 1];
 
     while scores.len() < desired_length {
         let current_recipes_score = scores[elf_positions[0]] + scores[elf_positions[1]];
+
         if current_recipes_score < 10 {
             scores.push(current_recipes_score);
         } else {
@@ -19,23 +15,44 @@ pub fn part1(input_string: &str) -> String {
             scores.push(current_recipes_score % 10);
         }
 
-        for i in 0..elf_positions.len() {
-            // "To do this, the Elf steps forward through the scoreboard a number of
-            // recipes equal to 1 plus the score of their current recipe."
-            elf_positions[i] =
-                (elf_positions[i] + 1 + scores[elf_positions[i] as usize] as usize) % scores.len();
-        }
+        elf_positions.iter_mut().for_each(|position| {
+            *position = (*position + 1 + scores[*position as usize] as usize) % scores.len();
+        });
     }
 
-    let mut result = String::new();
-    for i in 0..10 {
-        result.push_str(scores[input_number + i].to_string().as_ref());
-    }
-    result
+    scores
+        .iter()
+        .skip(input_number)
+        .take(10)
+        .fold(String::new(), |acc, score| acc + &score.to_string())
 }
 
-pub fn part2(_input_string: &str) -> String {
-    "".to_string()
+pub fn part2(input_string: &str) -> String {
+    let input_bytes: Vec<u8> = input_string.as_bytes().iter().map(|b| b - 48).collect();
+
+    let mut scores = vec![3_u8, 7_u8];
+    let mut elf_positions = vec![0, 1];
+
+    loop {
+        let current_recipes_score = scores[elf_positions[0]] + scores[elf_positions[1]];
+
+        let scores_to_push = if current_recipes_score < 10 {
+            vec![current_recipes_score]
+        } else {
+            vec![current_recipes_score / 10, current_recipes_score % 10]
+        };
+
+        for score in scores_to_push {
+            scores.push(score);
+            if scores.ends_with(&input_bytes) {
+                return (scores.len() - input_string.len()).to_string();
+            }
+        }
+
+        elf_positions.iter_mut().for_each(|position| {
+            *position = (*position + 1 + scores[*position as usize] as usize) % scores.len();
+        });
+    }
 }
 
 #[test]
@@ -49,9 +66,11 @@ fn tests_part1() {
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
-    assert_eq!("", part2(""));
+    assert_eq!("9", part2("51589"));
+    assert_eq!("5", part2("01245"));
+    assert_eq!("18", part2("92510"));
+    assert_eq!("2018", part2("59414"));
 
-    assert_eq!("", part2(include_str!("day14_input.txt")));
+    assert_eq!("20173656", part2(include_str!("day14_input.txt")));
 }
