@@ -1,4 +1,4 @@
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::VecDeque;
 
 #[derive(Debug, Copy, Clone)]
 enum MapCell {
@@ -213,18 +213,19 @@ impl Board {
     }
 
     fn shortest_distance(&mut self, sx: u32, sy: u32, elf_target: bool) -> (u32, u32, u32) {
-        let mut to_visit = BinaryHeap::new();
-        let mut visited = HashSet::new();
+        let mut to_visit = VecDeque::new();
+        let mut visited = vec![false; (self.width*self.height) as usize];
 
-        to_visit.push((0i32, -(sy as i32), -(sx as i32), 0, 0));
+        to_visit.push_back((0i32, sx, sy, 0, 0));
 
-        let mut targets = Vec::new();
+        //let mut targets = Vec::new();
 
-        while let Some(visiting) = to_visit.pop() {
-            let cost = -visiting.0 + 1;
-            let visiting_x = -visiting.2 as u32;
-            let visiting_y = -visiting.1 as u32;
-            visited.insert((visiting_x, visiting_y));
+        while let Some(visiting) = to_visit.pop_front() {
+            let cost = visiting.0 + 1;
+            let visiting_x = visiting.1 as u32;
+            let visiting_y = visiting.2 as u32;
+            //visited.insert((visiting_x, visiting_y));
+            visited[(visiting_x + visiting_y*self.height) as usize] = true;
 
             for (nx, ny) in [(0, -1i32), (-1i32, 0), (1, 0), (0, 1)].iter() {
                 let x = (visiting_x as i32 + *nx) as u32;
@@ -232,14 +233,14 @@ impl Board {
 
                 if let MapCell::Unit { elf, .. } = self.at(x, y) {
                     if *elf == elf_target {
-                        //return (cost as u32, visiting.3, visiting.4);
-                        targets.push((cost as u32, visiting.3, visiting.4))
+                        return (cost as u32, visiting.3, visiting.4);
+                        //targets.push((cost as u32, visiting.3, visiting.4))
                     };
                 };
 
-                // FIXME: Duplicated match with above.
                 if let MapCell::Open = self.at(x, y) {
-                    if !visited.contains(&(x, y)) {
+                    if !visited[(x + y*self.height) as usize] {
+                    //if !visited.contains(&(x, y)) {
                         let first_x: u32;
                         let first_y: u32;
                         if visiting_x == sx && visiting_y == sy {
@@ -252,21 +253,21 @@ impl Board {
                             first_y = visiting.4;
                         };
 
-                        to_visit.push((-cost, -(y as i32), -(x as i32), first_x, first_y));
+                        to_visit.push_back((cost, x, y, first_x, first_y));
                     };
                 }
             }
         }
 
         //let shortest_distance = targets.iter().map(|e| e.0).max().unwrap();
-        if targets.is_empty() {
+        //if targets.is_empty() {
             return (std::u32::MAX, 0, 0);
-        }
+        //}
 
-        targets.sort_by(|&a, &b| {
-            a.0.cmp(&b.0).then(a.2.cmp(&b.2)).then(a.1.cmp(&b.1))
-        });
-        targets[0]
+        //targets.sort_by(|&a, &b| {
+            //a.0.cmp(&b.0).then(a.2.cmp(&b.2)).then(a.1.cmp(&b.1))
+        //});
+        //targets[0]
     }
 
     fn print(&mut self) {
