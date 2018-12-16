@@ -20,11 +20,13 @@ struct Board {
     round: i32,
     full_round: bool,
     elves_alive: i32,
+    elf_died: bool,
     goblins_alive: i32,
+    elf_attack_power: i32,
 }
 
 impl Board {
-    fn parse(input_string: &str) -> Board {
+    fn parse(input_string: &str, elf_attack_power: i32) -> Board {
         let width = match input_string.find('\n') {
             Some(len) => len as u32,
             None => {
@@ -71,7 +73,9 @@ impl Board {
             round: 0,
             full_round: false,
             elves_alive,
+            elf_died: false,
             goblins_alive,
+            elf_attack_power,
         }
     }
 
@@ -152,10 +156,12 @@ impl Board {
         }
 
         if lowest_hit_points != std::i32::MAX {
+            let attack_damage = if elf_target { 3 } else { self.elf_attack_power };
+
             if let MapCell::Unit { hit_points, .. } =
                 self.at(target_position.0 as u32, target_position.1 as u32)
             {
-                *hit_points -= 3;
+                *hit_points -= attack_damage;
                 if *hit_points <= 0 {
                     self.put(
                         target_position.0 as u32,
@@ -164,6 +170,7 @@ impl Board {
                     );
                     if elf_target {
                         self.elves_alive -= 1;
+                        self.elf_died = true;
                     } else {
                         self.goblins_alive -= 1;
                     }
@@ -303,7 +310,7 @@ impl Board {
 }
 
 pub fn part1(input_string: &str) -> String {
-    let mut board = Board::parse(input_string);
+    let mut board = Board::parse(input_string, 3);
     board.print();
     loop {
         board.perform_round();
@@ -314,20 +321,27 @@ pub fn part1(input_string: &str) -> String {
     }
 }
 
-pub fn part2(_input_string: &str) -> String {
-    "".to_string()
+pub fn part2(input_string: &str) -> String {
+    let mut attack_strength = 4;
+    loop {
+        let mut board = Board::parse(input_string, attack_strength);
+        board.print();
+        loop {
+            board.perform_round();
+            board.print();
+            if board.elf_died {
+                break;
+            } else if board.goblins_alive == 0 {
+                return board.calculate_outcome().unwrap().to_string();
+            }
+        }
+
+        attack_strength += 1;
+    }
 }
 
 #[test]
 fn tests_part1() {
-    /*
-        assert_eq!("-1", part1("#######
-    #.E..G#
-    #.....#
-    #G....#
-    #######"));
-    */
-
     assert_eq!(
         "27730",
         part1(
@@ -412,9 +426,32 @@ fn tests_part1() {
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
-    assert_eq!("", part2(""));
+    assert_eq!(
+        "4988",
+        part2(
+            "#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######"
+        )
+    );
 
-    assert_eq!("", part2(include_str!("day14_input.txt")));
+    assert_eq!(
+        "31284",
+        part2(
+            "#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######"
+        )
+    );
+
+    assert_eq!("49120", part2(include_str!("day15_input.txt")));
 }
