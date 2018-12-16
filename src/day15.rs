@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::env;
 
 #[derive(Debug, Copy, Clone)]
 enum MapCell {
@@ -218,13 +219,12 @@ impl Board {
         for element in self.visited.iter_mut() {
             *element = false;
         }
+        self.visited[(sx + self.width * sy) as usize] = true;
 
         while let Some(visiting) = to_visit.pop_front() {
             let cost = visiting.0 + 1;
             let visiting_x = visiting.1 as u32;
             let visiting_y = visiting.2 as u32;
-            //visited.insert((visiting_x, visiting_y));
-            self.visited[(visiting_x + visiting_y * self.height) as usize] = true;
 
             for (nx, ny) in [(0, -1i32), (-1i32, 0), (1, 0), (0, 1)].iter() {
                 let x = (visiting_x as i32 + *nx) as u32;
@@ -238,6 +238,7 @@ impl Board {
 
                 if let MapCell::Open = self.at(x, y) {
                     if !self.visited[(x + y * self.height) as usize] {
+                        self.visited[(x + y * self.height) as usize] = true;
                         let first_x: u32;
                         let first_y: u32;
                         if visiting_x == sx && visiting_y == sy {
@@ -260,6 +261,10 @@ impl Board {
     }
 
     fn print(&mut self) {
+        if env::var("ADVENT_DEBUG").is_err() {
+            return;
+        }
+
         println!("Round {}", self.round);
         for y in 0..self.height {
             for x in 0..self.width {
@@ -403,7 +408,7 @@ fn tests_part1() {
         )
     );
 
-    //assert_eq!("27730", part1(include_str!("day15_input.txt")));
+    assert_eq!("207059", part1(include_str!("day15_input.txt")));
 }
 
 #[test]
