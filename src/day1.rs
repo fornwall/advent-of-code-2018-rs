@@ -52,7 +52,7 @@ mod tests {
 }
 
 #[test]
-fn tests_part1() {
+pub fn tests_part1() {
     assert_eq!("3", part1("+1,-2,+3,+1"));
     assert_eq!("3", part1("+1,+1,+1"));
     assert_eq!("0", part1("+1,+1,-2"));
