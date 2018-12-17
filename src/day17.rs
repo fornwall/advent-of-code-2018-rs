@@ -153,29 +153,22 @@ impl Grid {
     }
 
     fn dry_up(&mut self) {
-        let mut bottom_holds = vec![false; self.width];
-
         let mut line = (self.height - 1) as u16;
         loop {
-            //for (x, holds) in bottom_holds.iter_mut().enumerate().take(self.width) {
             for x in 0..self.width {
-                let holds = bottom_holds[x];
-                match self.at(x as u16, line as u16) {
-                    b'#' => {
-                        bottom_holds[x] = true;
+                if self.at(x as u16, line as u16) == b'w' {
+                    let below = if line == (self.height as u16 - 1) {
+                        b'.'
+                    } else {
+                        self.at(x as u16, line + 1)
+                    };
+
+                    if !((below == b'#' || below == b'w')
+                        && self.holds_in_direction(x as u16, line, -1)
+                        && self.holds_in_direction(x as u16, line, 1))
+                    {
+                        self.dry_at(x as u16, line as u16);
                     }
-                    b'w' => {
-                        if holds
-                            && self.holds_in_direction(x as u16, line, -1)
-                            && self.holds_in_direction(x as u16, line, 1)
-                        {
-                            bottom_holds[x] = true;
-                        } else {
-                            bottom_holds[x] = false;
-                            self.dry_at(x as u16, line as u16);
-                        }
-                    }
-                    _ => {}
                 }
             }
 
