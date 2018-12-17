@@ -11,7 +11,7 @@ pub fn part2(_input_string: &str) -> String {
 fn tests_part1() {
     assert_eq!("", part1(""));
 
-    assert_eq!("", part1(include_str!("day14_input.txt")));
+    assert_eq!("", part1(include_str!("day25_input.txt")));
 }
 
 #[test]
@@ -19,5 +19,5 @@ fn tests_part1() {
 fn tests_part2() {
     assert_eq!("", part2(""));
 
-    assert_eq!("", part2(include_str!("day14_input.txt")));
+    assert_eq!("", part2(include_str!("day25_input.txt")));
 }
