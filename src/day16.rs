@@ -206,24 +206,16 @@ pub fn part2(input_string: &str) -> String {
                 let registers_after = Registers::of(parts[0], parts[1], parts[2], parts[3]);
                 let s: &mut HashSet<Opcode> = &mut possible_meanings[instruction[0] as usize];
 
-                let mut to_remove = Vec::new();
-                {
-                    for opcode in s.iter() {
-                        let mut registers_applied = registers_before;
-                        registers_applied.apply(
-                            *opcode,
-                            instruction[1],
-                            instruction[2],
-                            instruction[3],
-                        );
-                        if registers_applied != registers_after {
-                            to_remove.push(*opcode);
-                        }
-                    }
-                }
-                for opcode in to_remove {
-                    s.remove(&opcode);
-                }
+                s.retain(|opcode| {
+                    let mut registers_applied = registers_before;
+                    registers_applied.apply(
+                        *opcode,
+                        instruction[1],
+                        instruction[2],
+                        instruction[3],
+                    );
+                    registers_applied == registers_after
+                });
             }
         } else {
             instruction = line
