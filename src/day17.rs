@@ -1,4 +1,5 @@
 use std::cmp::{max, min};
+use std::env;
 
 fn parse_point_interval(s: &str) -> (u16, u16) {
     if s.contains("..") {
@@ -43,10 +44,6 @@ impl Grid {
 
         let width = ((x_range.1 - x_range.0) + 3) as usize;
         let height = ((y_range.1 - y_range.0) + 1) as usize;
-        println!(
-            "width={}, height={} from ranges {:?} and {:?}",
-            width, height, x_range, y_range
-        );
 
         let mut cells = vec![b'.'; width as usize * height as usize];
         for point in points {
@@ -66,13 +63,18 @@ impl Grid {
         }
     }
 
-    fn print(&self) {
+    fn print(&self, name: &str) {
+        if env::var("ADVENT_DEBUG").is_err() {
+            return;
+        }
+        println!("### {}", name);
         for y in 0..self.height {
             for x in 0..self.width {
                 print!("{}", self.cells[(y * self.width + x) as usize] as char);
             }
             println!();
         }
+        println!();
     }
 
     fn at(&self, x: u16, y: u16) -> u8 {
@@ -83,40 +85,44 @@ impl Grid {
         self.cells[y as usize * self.width + x as usize] = b'w';
     }
 
-    fn fill_left_or_right(&mut self, x: u16, y: u16, x_step: i32) -> bool {
-        let mut x_left = (i32::from(x) + x_step) as u16;
+    fn dry_at(&mut self, x: u16, y: u16) {
+        self.cells[y as usize * self.width + x as usize] = b'.';
+    }
+
+    fn fill_in_direction(&mut self, x_start: u16, y: u16, x_direction: i32) -> bool {
+        let mut x = (i32::from(x_start) + x_direction) as u16;
         loop {
-            let cell = self.at(x_left, y);
+            let cell = self.at(x, y);
             if !(cell == b'.' || cell == b'w') {
                 break;
             }
-            self.set_water_at(x_left, y);
-            let below = self.at(x_left, y + 1);
+            self.set_water_at(x, y);
+            let below = self.at(x, y + 1);
             if !(below == b'#' || below == b'w') {
                 return false;
             }
-            x_left = (i32::from(x_left) + x_step) as u16;
+            x = (i32::from(x) + x_direction) as u16;
         }
-        self.at(x_left, y) == b'#'
+        self.at(x, y) == b'#'
     }
 
-    fn water(&mut self, x: u16, y: u16) -> u16 {
+    fn spread_water_at(&mut self, x: u16, y: u16) -> u16 {
         self.set_water_at(x, y);
 
         if (y as usize) < self.height - 1 {
             let below = self.at(x, y + 1);
             if below == b'#' || below == b'w' {
-                let left_wall = self.fill_left_or_right(x, y, -1);
-                let right_wall = self.fill_left_or_right(x, y, 1);
+                let left_wall = self.fill_in_direction(x, y, -1);
+                let right_wall = self.fill_in_direction(x, y, 1);
                 if left_wall && right_wall && y > 0 {
-                    return self.water(x, y - 1);
+                    return self.spread_water_at(x, y - 1);
                 }
             }
         }
         y
     }
 
-    fn fill_water(&mut self) {
+    fn pour_water(&mut self) {
         let mut line = 1;
         while line < self.height {
             let mut top_y = line;
@@ -124,10 +130,60 @@ impl Grid {
                 if self.at(x as u16, line as u16 - 1) == b'w'
                     && self.at(x as u16, line as u16) == b'.'
                 {
-                    top_y = min(top_y, self.water(x as u16, line as u16) as usize);
+                    top_y = min(top_y, self.spread_water_at(x as u16, line as u16) as usize);
                 }
             }
             line = top_y + 1;
+        }
+    }
+
+    fn holds_in_direction(&self, x_start: u16, y: u16, x_direction: i32) -> bool {
+        let mut x = (i32::from(x_start) + x_direction) as u16;
+        loop {
+            let cell = self.at(x, y);
+            let below = self.at(x, y + 1);
+            if !(below == b'#' || below == b'w') {
+                return false;
+            }
+            if cell == b'#' {
+                return true;
+            }
+            x = (i32::from(x) + x_direction) as u16;
+        }
+    }
+
+    fn dry_up(&mut self) {
+        let mut bottom_holds = vec![false; self.width];
+
+        let mut line = (self.height - 1) as u16;
+        loop {
+            //for (x, holds) in bottom_holds.iter_mut().enumerate().take(self.width) {
+            for x in 0..self.width {
+                let holds = bottom_holds[x];
+                match self.at(x as u16, line as u16) {
+                    b'#' => {
+                        bottom_holds[x] = true;
+                    }
+                    b'w' => {
+                        if holds
+                            && self.holds_in_direction(x as u16, line, -1)
+                            && self.holds_in_direction(x as u16, line, 1)
+                        {
+                            bottom_holds[x] = true;
+                        } else {
+                            bottom_holds[x] = false;
+                            self.dry_at(x as u16, line as u16);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if line == 0 {
+                break;
+            } else {
+                line -= 1;
+            }
         }
     }
 
@@ -138,13 +194,20 @@ impl Grid {
 
 pub fn part1(input_string: &str) -> String {
     let mut grid = Grid::from(input_string);
-    grid.fill_water();
-    grid.print();
+    grid.print("Initial");
+    grid.pour_water();
+    grid.print("After pouring");
     grid.count_water().to_string()
 }
 
-pub fn part2(_input_string: &str) -> String {
-    "".to_string()
+pub fn part2(input_string: &str) -> String {
+    let mut grid = Grid::from(input_string);
+    grid.print("Initial");
+    grid.pour_water();
+    grid.print("After pouring");
+    grid.dry_up();
+    grid.print("After drying up");
+    grid.count_water().to_string()
 }
 
 #[test]
@@ -167,11 +230,10 @@ y=13, x=498..504"
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
     assert_eq!(
         "29",
-        part1(
+        part2(
             "x=495, y=2..7
 y=7, x=495..501
 x=501, y=3..7
@@ -183,5 +245,5 @@ y=13, x=498..504"
         )
     );
 
-    assert_eq!("", part2(include_str!("day17_input.txt")));
+    assert_eq!("26384", part2(include_str!("day17_input.txt")));
 }
