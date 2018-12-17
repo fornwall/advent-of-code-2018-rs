@@ -1,10 +1,10 @@
+use std::collections::HashSet;
 #[derive(Copy, Clone, PartialEq)]
 struct Registers {
-    values: [u8; 4],
-    error: bool,
+    values: [u16; 4],
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum Opcode {
     Addr, // (add register) stores into register C the result of adding register A and register B
     Addi, // (add immediate) stores into register C the result of adding register A and value B.
@@ -25,18 +25,17 @@ enum Opcode {
 }
 
 impl Registers {
-    fn of(r0: u8, r1: u8, r2: u8, r3: u8) -> Registers {
+    fn of(r0: u16, r1: u16, r2: u16, r3: u16) -> Registers {
         Registers {
             values: [r0, r1, r2, r3],
-            error: false,
         }
     }
 
-    fn reg(&mut self, index: u8) -> u8 {
+    fn reg(&mut self, index: u16) -> u16 {
         self.values[index as usize]
     }
 
-    fn apply(&mut self, opcode: Opcode, a: u8, b: u8, c: u8) {
+    fn apply(&mut self, opcode: Opcode, a: u16, b: u16, c: u16) {
         let c = c as usize;
         self.values[c] = match opcode {
             Opcode::Addr => self.reg(a) + self.reg(b),
@@ -49,19 +48,19 @@ impl Registers {
             Opcode::Bori => self.reg(a) | b,
             Opcode::Setr => self.reg(a),
             Opcode::Seti => a,
-            Opcode::Gtir => (a > self.reg(b)) as u8,
-            Opcode::Gtri => (self.reg(a) > b) as u8,
-            Opcode::Gtrr => (self.reg(a) > self.reg(b)) as u8,
-            Opcode::Eqir => (a == self.reg(b)) as u8,
-            Opcode::Eqri => (self.reg(a) == b) as u8,
-            Opcode::Eqrr => (self.reg(a) == self.reg(b)) as u8,
+            Opcode::Gtir => (a > self.reg(b)) as u16,
+            Opcode::Gtri => (self.reg(a) > b) as u16,
+            Opcode::Gtrr => (self.reg(a) > self.reg(b)) as u16,
+            Opcode::Eqir => (a == self.reg(b)) as u16,
+            Opcode::Eqri => (self.reg(a) == b) as u16,
+            Opcode::Eqrr => (self.reg(a) == self.reg(b)) as u16,
         }
     }
 }
 
 pub fn part1(input_string: &str) -> String {
     let mut registers_before = Registers::of(0, 0, 0, 0);
-    let mut instruction: Vec<u8> = Vec::new();
+    let mut instruction: Vec<u16> = Vec::new();
     let mut last_blank = true;
     let mut result = 0;
 
@@ -80,10 +79,10 @@ pub fn part1(input_string: &str) -> String {
         let before = line.starts_with("Before:");
         let after = line.starts_with("After:");
         if before || after {
-            let parts: Vec<u8> = line[9..]
+            let parts: Vec<u16> = line[9..]
                 .split(|c| c == '[' || c == ']' || c == ',')
                 .filter(|s| !s.is_empty())
-                .map(|n| n.trim().parse::<u8>().unwrap())
+                .map(|n| n.trim().parse::<u16>().unwrap())
                 .collect();
 
             if before {
@@ -130,7 +129,7 @@ pub fn part1(input_string: &str) -> String {
         } else {
             instruction = line
                 .split_whitespace()
-                .map(|n| n.trim().parse::<u8>().unwrap())
+                .map(|n| n.trim().parse::<u16>().unwrap())
                 .collect();
         }
     }
@@ -138,8 +137,139 @@ pub fn part1(input_string: &str) -> String {
     result.to_string()
 }
 
-pub fn part2(_input_string: &str) -> String {
-    "".to_string()
+pub fn part2(input_string: &str) -> String {
+    let mut registers_before = Registers::of(0, 0, 0, 0);
+    let mut instruction: Vec<u16> = Vec::new();
+    let mut last_blank = true;
+    let mut in_program = false;
+
+    let mut possible_meanings: Vec<HashSet<Opcode>> = Vec::new();
+    for _ in 0..16 {
+        let mut s = HashSet::new();
+        for opcode in [
+            Opcode::Addr,
+            Opcode::Addi,
+            Opcode::Mulr,
+            Opcode::Muli,
+            Opcode::Banr,
+            Opcode::Bani,
+            Opcode::Borr,
+            Opcode::Bori,
+            Opcode::Setr,
+            Opcode::Seti,
+            Opcode::Gtir,
+            Opcode::Gtri,
+            Opcode::Gtrr,
+            Opcode::Eqir,
+            Opcode::Eqri,
+            Opcode::Eqrr,
+        ]
+        .iter()
+        {
+            s.insert(*opcode);
+        }
+        possible_meanings.push(s);
+    }
+
+    let mut program: Vec<Vec<u16>> = Vec::new();
+    for line in input_string.lines() {
+        if line.is_empty() {
+            if last_blank {
+                in_program = true;
+            } else {
+                last_blank = true;
+            }
+            continue;
+        }
+        if in_program {
+            let instruction = line
+                .split_whitespace()
+                .map(|n| n.trim().parse::<u16>().unwrap())
+                .collect();
+            program.push(instruction);
+        }
+
+        last_blank = false;
+
+        let before = line.starts_with("Before:");
+        let after = line.starts_with("After:");
+        if before || after {
+            let parts: Vec<u16> = line[9..]
+                .split(|c| c == '[' || c == ']' || c == ',')
+                .filter(|s| !s.is_empty())
+                .map(|n| n.trim().parse::<u16>().unwrap())
+                .collect();
+
+            if before {
+                registers_before = Registers::of(parts[0], parts[1], parts[2], parts[3]);
+            } else {
+                let registers_after = Registers::of(parts[0], parts[1], parts[2], parts[3]);
+                let s: &mut HashSet<Opcode> = &mut possible_meanings[instruction[0] as usize];
+
+                let mut to_remove = Vec::new();
+                {
+                    for opcode in s.iter() {
+                        let mut registers_applied = registers_before;
+                        registers_applied.apply(
+                            *opcode,
+                            instruction[1],
+                            instruction[2],
+                            instruction[3],
+                        );
+                        if registers_applied != registers_after {
+                            to_remove.push(*opcode);
+                        }
+                    }
+                }
+                for opcode in to_remove {
+                    s.remove(&opcode);
+                }
+            }
+        } else {
+            instruction = line
+                .split_whitespace()
+                .map(|n| n.trim().parse::<u16>().unwrap())
+                .collect();
+        }
+    }
+
+    let mut assigned_opcodes = HashSet::new();
+    for s in possible_meanings.iter_mut() {
+        if s.len() == 1 {
+            assigned_opcodes.insert(*s.iter().next().unwrap());
+        }
+    }
+
+    let mut new_assign = Vec::new();
+    loop {
+        if assigned_opcodes.len() == 16 {
+            break;
+        }
+        for new in assigned_opcodes.iter() {
+            for s in possible_meanings.iter_mut() {
+                if s.len() > 1 && s.remove(&new) && s.len() == 1 {
+                    new_assign.push(*s.iter().next().unwrap());
+                }
+            }
+        }
+
+        for new in new_assign.iter() {
+            assigned_opcodes.insert(*new);
+        }
+    }
+
+    let meanings: Vec<Opcode> = possible_meanings
+        .iter()
+        .map(|s| *s.iter().next().unwrap())
+        .collect();
+
+    let mut regs = Registers::of(0, 0, 0, 0);
+    for instruction in program {
+        let opcode = meanings[instruction[0] as usize];
+        regs.apply(opcode, instruction[1], instruction[2], instruction[3]);
+    }
+
+    regs.values[0].to_string()
 }
 
 #[test]
@@ -157,9 +287,6 @@ After:  [3, 2, 2, 1]"
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
-    assert_eq!("", part2(""));
-
-    assert_eq!("", part2(include_str!("day16_input.txt")));
+    assert_eq!("584", part2(include_str!("day16_input.txt")));
 }
