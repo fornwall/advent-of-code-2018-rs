@@ -233,10 +233,7 @@ pub fn part2(input_string: &str) -> String {
     }
 
     let mut new_assign = Vec::new();
-    loop {
-        if assigned_opcodes.len() == 16 {
-            break;
-        }
+    while assigned_opcodes.len() != 16 {
         for new in assigned_opcodes.iter() {
             for s in possible_meanings.iter_mut() {
                 if s.len() > 1 && s.remove(&new) && s.len() == 1 {
