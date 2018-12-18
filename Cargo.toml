@@ -1,6 +1,6 @@
 [package]
 name = "advent_of_code_rs"
-version = "11.0.12"
+version = "11.0.13"
 authors = ["Fredrik Fornwall <fredrik@fornwall.net>"]
 repository = "https://github.com/fornwall/advent-of-code-2018-rs"
 license = "MIT OR Apache-2.0"
@@ -16,5 +16,5 @@ lto = true
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "*"
 
-[dev-dependencies]
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "*"
