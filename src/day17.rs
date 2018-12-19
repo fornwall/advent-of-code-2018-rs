@@ -69,10 +69,11 @@ impl Grid {
         }
         println!("### {}", name);
         for y in 0..self.height {
-            for x in 0..self.width {
-                print!("{}", self.cells[(y * self.width + x) as usize] as char);
-            }
-            println!();
+            println!(
+                "{}",
+                String::from_utf8(self.cells[y * self.width..(y + 1) * self.width].to_vec())
+                    .unwrap()
+            );
         }
         println!();
     }
@@ -153,8 +154,9 @@ impl Grid {
     }
 
     fn dry_up(&mut self) {
-        let mut line = (self.height - 1) as u16;
-        loop {
+        let mut line = self.height as u16;
+        while line > 0 {
+            line -= 1;
             for x in 0..self.width {
                 if self.at(x as u16, line as u16) == b'w' {
                     let below = if line == (self.height as u16 - 1) {
@@ -170,12 +172,6 @@ impl Grid {
                         self.dry_at(x as u16, line as u16);
                     }
                 }
-            }
-
-            if line == 0 {
-                break;
-            } else {
-                line -= 1;
             }
         }
     }
