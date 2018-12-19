@@ -1,3 +1,5 @@
+use std::env;
+
 #[derive(Copy, Clone, PartialEq)]
 struct Registers {
     values: [u64; 6],
@@ -17,16 +19,6 @@ impl Program {
     fn execute(&mut self) -> u64 {
         loop {
             let ip = self.instruction_pointer();
-            /*
-            println!("ip={} [{}, {}, {}, {}, {}, {}]", ip,
-                     self.registers.values[0],
-                     self.registers.values[1],
-                     self.registers.values[2],
-                     self.registers.values[3],
-                     self.registers.values[4],
-                     self.registers.values[5]
-            );
-            */
             if ip as usize >= self.instructions.len() {
                 return self.registers.values[0];
             }
@@ -34,6 +26,122 @@ impl Program {
             self.registers
                 .apply(instruction.0, instruction.1, instruction.2, instruction.3);
             self.registers.values[self.instruction_pointer_index as usize] += 1;
+        }
+    }
+    fn optimize(&mut self) {
+        for (line, instruction) in self.instructions.iter_mut().enumerate() {
+            match instruction.0 {
+                Opcode::Addi => {
+                    if instruction.1 as u8 == self.instruction_pointer_index {
+                        instruction.0 = Opcode::Seti;
+                        instruction.1 = line as u64 + instruction.2;
+                        instruction.2 = 0; // ignored
+                    }
+                }
+                Opcode::Mulr => {
+                    if instruction.1 as u8 == self.instruction_pointer_index
+                        && instruction.2 as u8 == self.instruction_pointer_index
+                    {
+                        instruction.0 = Opcode::Seti;
+                        instruction.1 = line as u64 * line as u64;
+                        instruction.2 = 0; // ignored
+                    }
+                }
+                Opcode::Muli => {
+                    if instruction.1 as u8 == self.instruction_pointer_index {
+                        instruction.0 = Opcode::Seti;
+                        instruction.1 = line as u64 * instruction.2;
+                        instruction.2 = 0; // ignored
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn pretty_print(&self, title: &str) {
+        if env::var("ADVENT_DEBUG").is_err() {
+            return;
+        }
+
+        println!("# {}", title);
+
+        for (line, &instruction) in self.instructions.iter().enumerate() {
+            print!("{:02}: ", line);
+
+            // If target register is the instruction pointer:
+            let goto = instruction.3 as u8 == self.instruction_pointer_index;
+            if goto {
+                print!("goto ");
+            } else {
+                print!("r{} = ", instruction.3)
+            }
+
+            let a_is_value = match instruction.0 {
+                Opcode::Seti | Opcode::Gtir | Opcode::Eqir => true,
+                _ => false,
+            };
+            let b_is_value = match instruction.0 {
+                Opcode::Addi
+                | Opcode::Muli
+                | Opcode::Bani
+                | Opcode::Bori
+                | Opcode::Gtri
+                | Opcode::Eqri => true,
+                _ => false,
+            };
+
+            let a = if a_is_value {
+                format!("{}", instruction.1)
+            } else if instruction.1 as u8 == self.instruction_pointer_index {
+                line.to_string()
+            } else {
+                format!("r{}", instruction.1)
+            };
+
+            let b = if b_is_value {
+                format!("{}", instruction.2)
+            } else if instruction.2 as u8 == self.instruction_pointer_index {
+                //b_is_value = true
+                // instruction.2 = line
+                line.to_string()
+            } else {
+                format!("r{}", instruction.2)
+            };
+
+            let pretty = match instruction.0 {
+                Opcode::Addr | Opcode::Addi => {
+                    if a_is_value && b_is_value {
+                        format!("{}", instruction.1 + instruction.2)
+                    } else {
+                        format!("{} + {}", a, b)
+                    }
+                }
+                Opcode::Mulr | Opcode::Muli => {
+                    if a_is_value && b_is_value {
+                        format!("{}", instruction.1 * instruction.2)
+                    } else {
+                        format!("{} * {}", a, b)
+                    }
+                }
+                Opcode::Setr | Opcode::Seti => a.to_string(),
+                Opcode::Gtrr => {
+                    // (greater-than register/register) sets register C to 1 if register A is greater than register B. Otherwise, register C is set to 0.
+                    format!("({} > {}) ? 1 : 0", a, b)
+                }
+                Opcode::Eqrr => {
+                    // (equal register/register) sets register C to 1 if register A is equal to register B. Otherwise, register C is set to 0.
+                    format!("({} == {}) ? 1 : 0", a, b)
+                }
+                _ => {
+                    panic!("Unhandled opcode at line: {}", line);
+                }
+            };
+            print!("{}", pretty);
+            if goto {
+                print!(" + 1");
+            }
+            println!();
         }
     }
 }
@@ -165,8 +273,19 @@ pub fn part2(input_string: &str) -> String {
 
     program.registers.values[0] = 1;
 
-    // Too slow: program.execute().to_string()
-    "".to_string()
+    program.pretty_print("Initial");
+
+    program.optimize();
+    program.pretty_print("Optimized");
+
+    let mut sum = 0;
+    let seed = 10_551_377;
+    for i in 1..=seed {
+        if seed % i == 0 {
+            sum += i;
+        }
+    }
+    sum.to_string()
 }
 
 #[test]
@@ -190,5 +309,5 @@ seti 9 0 5"
 
 #[test]
 fn tests_part2() {
-    assert_eq!("", part2(include_str!("day19_input.txt")));
+    assert_eq!("10996992", part2(include_str!("day19_input.txt")));
 }
