@@ -28,6 +28,7 @@ impl Program {
             self.registers.values[self.instruction_pointer_index as usize] += 1;
         }
     }
+
     fn optimize(&mut self) {
         for (line, instruction) in self.instructions.iter_mut().enumerate() {
             match instruction.0 {
@@ -144,6 +145,29 @@ impl Program {
             println!();
         }
     }
+
+    fn parse(input_string: &str) -> Program {
+        let mut lines = input_string.lines();
+        let first_line = lines.next().unwrap();
+
+        let instruction_pointer_index = (&first_line[4..]).parse::<u8>().unwrap();
+
+        let mut instructions = Vec::new();
+        for line in lines {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            let opcode = opcode_from_str(parts[0]);
+            let a = parts[1].parse::<u64>().unwrap();
+            let b = parts[2].parse::<u64>().unwrap();
+            let c = parts[3].parse::<u64>().unwrap();
+            instructions.push((opcode, a, b, c));
+        }
+
+        Program {
+            instruction_pointer_index,
+            instructions,
+            registers: Registers::new(),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -225,51 +249,11 @@ impl Registers {
 }
 
 pub fn part1(input_string: &str) -> String {
-    let mut lines = input_string.lines();
-    let first_line = lines.next().unwrap();
-
-    let instruction_pointer_index = (&first_line[4..]).parse::<u8>().unwrap();
-
-    let mut instructions = Vec::new();
-    for line in lines {
-        let parts: Vec<&str> = line.split_whitespace().collect();
-        let opcode = opcode_from_str(parts[0]);
-        let a = parts[1].parse::<u64>().unwrap();
-        let b = parts[2].parse::<u64>().unwrap();
-        let c = parts[3].parse::<u64>().unwrap();
-        instructions.push((opcode, a, b, c));
-    }
-
-    let mut program = Program {
-        instruction_pointer_index,
-        instructions,
-        registers: Registers::new(),
-    };
-
-    program.execute().to_string()
+    Program::parse(input_string).execute().to_string()
 }
 
 pub fn part2(input_string: &str) -> String {
-    let mut lines = input_string.lines();
-    let first_line = lines.next().unwrap();
-
-    let instruction_pointer_index = (&first_line[4..]).parse::<u8>().unwrap();
-
-    let mut instructions = Vec::new();
-    for line in lines {
-        let parts: Vec<&str> = line.split_whitespace().collect();
-        let opcode = opcode_from_str(parts[0]);
-        let a = parts[1].parse::<u64>().unwrap();
-        let b = parts[2].parse::<u64>().unwrap();
-        let c = parts[3].parse::<u64>().unwrap();
-        instructions.push((opcode, a, b, c));
-    }
-
-    let mut program = Program {
-        instruction_pointer_index,
-        instructions,
-        registers: Registers::new(),
-    };
+    let mut program = Program::parse(input_string);
 
     program.registers.values[0] = 1;
 
