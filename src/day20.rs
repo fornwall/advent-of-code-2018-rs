@@ -2,11 +2,27 @@ use std::cmp::max;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet, VecDeque};
 
-pub fn part1(input_string: &str) -> String {
-    if !(input_string.starts_with('^') && input_string.ends_with('$')) {
-        return "Invalid input not prefixed with ^ and ending with $".to_string();
-    }
+pub fn visit_rooms<F>(input_string: &str, mut callback: F)
+where
+    F: FnMut(i32),
+{
     let input_string = &input_string[1..input_string.len() - 1];
+
+    let apply_direction = |direction, position: &mut (i32, i32)| match direction {
+        'N' => {
+            position.1 -= 1;
+        }
+        'E' => {
+            position.0 += 1;
+        }
+        'S' => {
+            position.1 += 1;
+        }
+        'W' => {
+            position.0 -= 1;
+        }
+        _ => {}
+    };
 
     let mut room_doors = HashMap::new();
     let mut last_positions = Vec::new();
@@ -18,21 +34,7 @@ pub fn part1(input_string: &str) -> String {
                     .entry(current_position)
                     .or_insert_with(Vec::new)
                     .push(char);
-                match char {
-                    'N' => {
-                        current_position.1 -= 1;
-                    }
-                    'E' => {
-                        current_position.0 += 1;
-                    }
-                    'S' => {
-                        current_position.1 += 1;
-                    }
-                    'W' => {
-                        current_position.0 -= 1;
-                    }
-                    _ => {}
-                }
+                apply_direction(char, &mut current_position);
             }
             '(' => {
                 last_positions.push(current_position);
@@ -45,51 +47,46 @@ pub fn part1(input_string: &str) -> String {
                 current_position = last_positions.pop().unwrap();
             }
             _ => {
-                return format!("Unexpected char: {}", char);
+                panic!("Unexpected char: {}", char);
             }
         }
     }
 
-    let mut to_visit = VecDeque::new();
     let mut visited = HashSet::new();
-    let mut highest_cost = 0;
-
+    let mut to_visit = VecDeque::new();
     to_visit.push_back((0i32, 0, 0));
 
     while let Some(visiting) = to_visit.pop_front() {
-        highest_cost = max(visiting.0, highest_cost);
+        callback(visiting.0);
 
         if let Entry::Occupied(doors) = room_doors.entry((visiting.1, visiting.2)) {
-            for char in doors.get().iter() {
+            for char in doors.get() {
                 let mut adjacent_room = (visiting.1, visiting.2);
-                //println!("From {:?}, going {}, cost={}", adjacent_room, char, visiting.0);
-                match char {
-                    'N' => {
-                        adjacent_room.1 -= 1;
-                    }
-                    'E' => {
-                        adjacent_room.0 += 1;
-                    }
-                    'S' => {
-                        adjacent_room.1 += 1;
-                    }
-                    'W' => {
-                        adjacent_room.0 -= 1;
-                    }
-                    _ => {}
-                }
+                apply_direction(*char, &mut adjacent_room);
                 if visited.insert(adjacent_room) {
                     to_visit.push_back((visiting.0 + 1, adjacent_room.0, adjacent_room.1));
                 }
             }
         };
     }
+}
 
+pub fn part1(input_string: &str) -> String {
+    let mut highest_cost = 0;
+    visit_rooms(input_string, |cost| {
+        highest_cost = max(highest_cost, cost);
+    });
     highest_cost.to_string()
 }
 
-pub fn part2(_input_string: &str) -> String {
-    "".to_string()
+pub fn part2(input_string: &str) -> String {
+    let mut room_count = 0;
+    visit_rooms(input_string, |cost| {
+        if cost >= 1000 {
+            room_count += 1;
+        }
+    });
+    room_count.to_string()
 }
 
 #[test]
@@ -102,9 +99,6 @@ fn tests_part1() {
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
-    assert_eq!("", part2(""));
-
-    assert_eq!("", part2(include_str!("day20_input.txt")));
+    assert_eq!("8784", part2(include_str!("day20_input.txt")));
 }
