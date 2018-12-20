@@ -17,16 +17,22 @@ impl Program {
     }
 
     fn execute(&mut self) -> u64 {
-        loop {
-            let ip = self.instruction_pointer();
-            if ip as usize >= self.instructions.len() {
-                return self.registers.values[0];
-            }
-            let instruction = self.instructions[ip as usize];
-            self.registers
-                .apply(instruction.0, instruction.1, instruction.2, instruction.3);
-            self.registers.values[self.instruction_pointer_index as usize] += 1;
+        while self.execute_one_instruction() {
+            // Go on.
         }
+        self.registers.values[0]
+    }
+
+    fn execute_one_instruction(&mut self) -> bool {
+        let ip = self.instruction_pointer();
+        if ip as usize >= self.instructions.len() {
+            return false;
+        }
+        let instruction = self.instructions[ip as usize];
+        self.registers
+            .apply(instruction.0, instruction.1, instruction.2, instruction.3);
+        self.registers.values[self.instruction_pointer_index as usize] += 1;
+        true
     }
 
     fn optimize(&mut self) {
@@ -262,8 +268,14 @@ pub fn part2(input_string: &str) -> String {
     program.optimize();
     program.pretty_print("Optimized");
 
+    // Assuming som of all factors program starts at instruction 1:
+    while program.registers.values[1] == 0 {
+        program.execute_one_instruction();
+    }
+
     let mut sum = 0;
-    let seed = 10_551_377;
+    // Assuming number to be factored is highest register value:
+    let &seed = program.registers.values.iter().max().unwrap();
     for i in 1..=seed {
         if seed % i == 0 {
             sum += i;
