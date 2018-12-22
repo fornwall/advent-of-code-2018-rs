@@ -1,4 +1,5 @@
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::hash_map::Entry;
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 enum RegionType {
     Rocky,
@@ -46,16 +47,14 @@ fn other_equipment(region_type: RegionType, equipment: Equipment) -> Equipment {
 }
 
 struct Grid {
-    cells: Vec<i64>, // Storing geological index.
-    width: usize,
-    height: usize,
+    cache: HashMap<(usize, usize), usize>,
     depth: usize,
     target_x: usize,
     target_y: usize,
 }
 
 impl Grid {
-    fn parse(input_string: &str, padding: usize) -> Grid {
+    fn parse(input_string: &str) -> Grid {
         let lines: Vec<&str> = input_string.lines().collect();
         let depth = lines[0][7..].parse::<usize>().unwrap();
 
@@ -63,14 +62,8 @@ impl Grid {
         let target_x = parts[0].parse::<usize>().unwrap();
         let target_y = parts[1].parse::<usize>().unwrap();
 
-        let width = target_x + 1 + padding;
-        let height = target_y + 1 + padding;
-
-        let cells = vec![-1; width * height];
         Grid {
-            cells,
-            width,
-            height,
+            cache: HashMap::new(),
             depth,
             target_x,
             target_y,
@@ -78,34 +71,30 @@ impl Grid {
     }
 
     fn geological_index(&mut self, x: usize, y: usize) -> usize {
-        let index_value = y as usize * self.width + x as usize;
-        let cached_value = self.cells[index_value];
-        if cached_value != -1 {
-            return cached_value as usize;
+        if let Entry::Occupied(entry) = self.cache.entry((x, y)) {
+            return *entry.get();
         }
-
-        let result = if (x == 0 && y == 0) || (x == self.target_x && y == self.target_y) {
+        let value = if (x == 0 && y == 0) || (x == self.target_x && y == self.target_y) {
             // The region at 0,0 (the mouth of the cave) has a geologic index of 0:
             // The region at the coordinates of the target has a geologic index of 0:
             0
         } else if y == 0 {
             // If the region's Y coordinate is 0, the geologic index is its X coordinate times 16807:
-            x * 16807usize
+            x * 16807
         } else if x == 0 {
             // If the region's X coordinate is 0, the geologic index is its Y coordinate times 48271:
-            y * 48271usize
+            y * 48271
         } else {
             // Otherwise, the region's geologic index is the result of multiplying the erosion levels of the regions at X-1,Y and X,Y-1:
-            self.erosion_level(x - 1, y) * self.erosion_level(x, y - 1)
+;            self.erosion_level(x - 1, y) * self.erosion_level(x, y - 1)
         };
-
-        self.cells[index_value] = result as i64;
-        result as usize
+        self.cache.insert((x, y), value);
+        value
     }
 
     /// A region's erosion level is its geologic index plus the cave system's depth, all modulo 20183.
     fn erosion_level(&mut self, x: usize, y: usize) -> usize {
-        (self.geological_index(x, y) + self.depth) % 20183usize
+        (self.geological_index(x, y) + self.depth) % 20183
     }
 
     fn risk_level(&mut self, x: usize, y: usize) -> usize {
@@ -125,7 +114,7 @@ impl Grid {
 }
 
 pub fn part1(input_string: &str) -> String {
-    let mut grid = Grid::parse(input_string, 0);
+    let mut grid = Grid::parse(input_string);
     let mut sum = 0;
     for y in 0..=grid.target_y {
         for x in 0..=grid.target_x {
@@ -136,7 +125,7 @@ pub fn part1(input_string: &str) -> String {
 }
 
 pub fn part2(input_string: &str) -> String {
-    let mut grid = Grid::parse(input_string, 100);
+    let mut grid = Grid::parse(input_string);
     let mut to_visit = BinaryHeap::new();
     let mut visited = HashSet::new();
 
@@ -169,25 +158,30 @@ pub fn part2(input_string: &str) -> String {
         let region_type_visiting = grid.region_type(visiting_x as usize, visiting_y as usize);
 
         let other_equipment = other_equipment(region_type_visiting, equipment);
-        let new_cost = cost + 7;
-        let new_heuristic = heuristic(visiting_x, visiting_y, other_equipment, &grid);
-        to_visit.push((
-            -(new_cost + new_heuristic),
-            -new_cost,
-            visiting_x,
-            visiting_y,
-            other_equipment,
-        ));
+        if !visited.contains(&(visiting_y, visiting_y, other_equipment)) {
+            let new_cost = cost + 7;
+            let new_heuristic = heuristic(visiting_x, visiting_y, other_equipment, &grid);
+            to_visit.push((
+                -(new_cost + new_heuristic),
+                -new_cost,
+                visiting_x,
+                visiting_y,
+                other_equipment,
+            ));
+        }
 
         for (nx, ny) in [(0, -1i32), (-1i32, 0), (1, 0), (0, 1)].iter() {
             let new_x = (visiting_x as i32 + *nx) as i32;
             let new_y = (visiting_y as i32 + *ny) as i32;
-            if new_x < 0 || new_x >= grid.width as i32 || new_y < 0 || new_y >= grid.height as i32 {
+            if new_x < 0 || new_y < 0 {
                 continue;
             }
 
             let region_type_new = grid.region_type(new_x as usize, new_y as usize);
             if is_compatible(region_type_new, equipment) {
+                if visited.contains(&(new_x, new_y, equipment)) {
+                    continue;
+                }
                 let new_cost = cost + 1;
                 let new_heuristic = heuristic(new_x, new_y, equipment, &grid);
                 to_visit.push((
