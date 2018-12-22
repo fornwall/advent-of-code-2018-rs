@@ -140,14 +140,20 @@ pub fn part2(input_string: &str) -> String {
     let mut to_visit = BinaryHeap::new();
     let mut visited = HashSet::new();
 
-    // (-cost, x, y, equipment)
-    to_visit.push((0i32, 0, 0, Equipment::Torch));
+    // (-(cost+heuristic), -cost, x, y, equipment)
+    to_visit.push((0, 0, 0, 0, Equipment::Torch));
+
+    let heuristic = |x: i32, y: i32, equipment, g: &Grid| -> i32 {
+        (x - g.target_x as i32).abs()
+            + (y - g.target_y as i32).abs()
+            + if equipment == Equipment::Torch { 0 } else { 7 }
+    };
 
     while let Some(visiting) = to_visit.pop() {
-        let cost = -visiting.0;
-        let visiting_x = visiting.1 as i32;
-        let visiting_y = visiting.2 as i32;
-        let equipment = visiting.3;
+        let cost = -visiting.1;
+        let visiting_x = visiting.2 as i32;
+        let visiting_y = visiting.3 as i32;
+        let equipment = visiting.4;
 
         if !visited.insert((visiting_x, visiting_y, equipment)) {
             continue;
@@ -164,7 +170,14 @@ pub fn part2(input_string: &str) -> String {
 
         let other_equipment = other_equipment(region_type_visiting, equipment);
         let new_cost = cost + 7;
-        to_visit.push((-new_cost, visiting_x, visiting_y, other_equipment));
+        let new_heuristic = heuristic(visiting_x, visiting_y, other_equipment, &grid);
+        to_visit.push((
+            -(new_cost + new_heuristic),
+            -new_cost,
+            visiting_x,
+            visiting_y,
+            other_equipment,
+        ));
 
         for (nx, ny) in [(0, -1i32), (-1i32, 0), (1, 0), (0, 1)].iter() {
             let new_x = (visiting_x as i32 + *nx) as i32;
@@ -176,7 +189,14 @@ pub fn part2(input_string: &str) -> String {
             let region_type_new = grid.region_type(new_x as usize, new_y as usize);
             if is_compatible(region_type_new, equipment) {
                 let new_cost = cost + 1;
-                to_visit.push((-new_cost, new_x, new_y, equipment));
+                let new_heuristic = heuristic(new_x, new_y, equipment, &grid);
+                to_visit.push((
+                    -(new_cost + new_heuristic),
+                    -new_cost,
+                    new_x,
+                    new_y,
+                    equipment,
+                ));
             }
         }
     }
