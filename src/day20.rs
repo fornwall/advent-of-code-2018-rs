@@ -25,26 +25,63 @@ where
     };
 
     let mut room_doors = HashMap::new();
-    let mut last_positions = Vec::new();
-    let mut current_position = (0, 0);
+
+    let mut current_positions = HashSet::new();
+    let mut positions_at_start_of_branch = Vec::new();
+    let mut new_possibilities = Vec::new();
+
+    current_positions.insert((0, 0));
     for char in input_string.chars() {
         match char {
             'N' | 'E' | 'S' | 'W' => {
-                room_doors
-                    .entry(current_position)
-                    .or_insert_with(Vec::new)
-                    .push(char);
-                apply_direction(char, &mut current_position);
+                let old_positions = current_positions;
+                current_positions = HashSet::new();
+                for possibility in old_positions {
+                    let mut possibility = possibility;
+                    room_doors
+                        .entry(possibility)
+                        .or_insert_with(Vec::new)
+                        .push(char);
+                    apply_direction(char, &mut possibility);
+                    let reverse_direction = match char {
+                        'N' => 'S',
+                        'E' => 'W',
+                        'S' => 'N',
+                        'W' => 'E',
+                        _ => '?',
+                    };
+                    room_doors
+                        .entry(possibility)
+                        .or_insert_with(Vec::new)
+                        .push(reverse_direction);
+                    current_positions.insert(possibility);
+                }
             }
             '(' => {
-                last_positions.push(current_position);
+                positions_at_start_of_branch.push(current_positions.clone());
+                new_possibilities.push(Vec::new());
             }
             '|' => {
-                current_position = last_positions.pop().unwrap();
-                last_positions.push(current_position)
+                new_possibilities
+                    .last_mut()
+                    .unwrap()
+                    .push(current_positions);
+                current_positions = positions_at_start_of_branch.last_mut().unwrap().clone();
             }
             ')' => {
-                current_position = last_positions.pop().unwrap();
+                new_possibilities
+                    .last_mut()
+                    .unwrap()
+                    .push(current_positions);
+                current_positions = HashSet::new();
+                let nn: Vec<HashSet<(i32, i32)>> = new_possibilities.pop().unwrap();
+                for n in nn {
+                    for e in n {
+                        current_positions.insert(e);
+                    }
+                }
+
+                positions_at_start_of_branch.pop();
             }
             _ => {
                 panic!("Unexpected char: {}", char);
@@ -94,6 +131,10 @@ fn tests_part1() {
     assert_eq!("3", part1("^WNE$"));
     assert_eq!("10", part1("^ENWWW(NEEE|SSE(EE|N))$"));
     assert_eq!("18", part1("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$"));
+    assert_eq!("8", part1("^(SSS|EEESSSWWW)ENNES$"));
+    assert_eq!("4", part1("^(E|SSEENNW)S$"));
+    assert_eq!("2", part1("^(E|SEN)$"));
+    assert_eq!("15", part1("^NNNNN(EEEEE|NNN)NNNNN$"));
 
     assert_eq!("3151", part1(include_str!("day20_input.txt")));
 }
