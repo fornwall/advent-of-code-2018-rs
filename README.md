@@ -57,3 +57,4 @@ As another proof of concept the solution can run inside the browser at https://f
 | [Day 20](https://adventofcode.com/2018/day/20) | [src/day20.rs](src/day20.rs) | [Reddit](https://www.reddit.com/r/adventofcode/comments/7kz6ik/2017_day_20_solutions/)
 | [Day 21](https://adventofcode.com/2018/day/21) | [src/day21.rs](src/day21.rs) | [Reddit](https://www.reddit.com/r/adventofcode/comments/a86jgt/2018_day_21_solutions/)
 | [Day 22](https://adventofcode.com/2018/day/22) | [src/day22.rs](src/day22.rs) | [Reddit](https://www.reddit.com/r/adventofcode/comments/a8i1cy/2018_day_22_solutions/)
+| [Day 23](https://adventofcode.com/2018/day/23) | [src/day23.rs](src/day23.rs) | [Reddit](https://www.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/)
