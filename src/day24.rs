@@ -107,16 +107,17 @@ impl ArmyGroup {
             }
     }
 
-    fn attack(&self, other_group: &mut ArmyGroup) {
+    fn attack(&self, other_group: &mut ArmyGroup) -> bool {
         let damage = self.damage_when_attacking(other_group);
         let killed_units = damage / other_group.hit_points;
+        //println!("{} attacks {}, causing damage: {}", self.id, other_group.id, damage);
         other_group.units -= killed_units;
+        killed_units > 0
     }
 }
 
-pub fn part1(input_string: &str) -> String {
-    let groups_values = ArmyGroup::parse(input_string);
-    let mut groups: Vec<RefCell<ArmyGroup>> = groups_values.into_iter().map(RefCell::new).collect();
+fn execute_battle(groups: Vec<ArmyGroup>) -> Vec<RefCell<ArmyGroup>> {
+    let mut groups: Vec<RefCell<ArmyGroup>> = groups.into_iter().map(RefCell::new).collect();
     loop {
         // Target selection.
         groups.sort_by(|a, b| {
@@ -167,18 +168,24 @@ pub fn part1(input_string: &str) -> String {
         }
 
         // Attacking.
+        let mut any_killed_units = false;
         groups.sort_by(|a, b| b.borrow().initiative.cmp(&a.borrow().initiative));
         for attacking_group in groups.iter() {
             if attacking_group.borrow().is_alive() {
                 let attacking_group_id = attacking_group.borrow().id;
                 for other_group in groups.iter() {
-                    if other_group.borrow().attacked_by == attacking_group_id {
-                        attacking_group
-                            .borrow()
-                            .attack(&mut other_group.borrow_mut());
+                    let mut other_group_borrowed = other_group.borrow_mut();
+                    if other_group_borrowed.attacked_by == attacking_group_id
+                        && attacking_group.borrow().attack(&mut other_group_borrowed)
+                    {
+                        any_killed_units = true;
                     }
                 }
             }
+        }
+
+        if !any_killed_units {
+            break;
         }
 
         groups.retain(|g| g.borrow().is_alive());
@@ -198,13 +205,38 @@ pub fn part1(input_string: &str) -> String {
     }
 
     groups
+}
+
+pub fn part1(input_string: &str) -> String {
+    let groups = execute_battle(ArmyGroup::parse(input_string));
+
+    groups
         .iter()
         .fold(0, |acc, g| acc + g.borrow().units)
         .to_string()
 }
 
-pub fn part2(_input_string: &str) -> String {
-    "".to_string()
+pub fn part2(input_string: &str) -> String {
+    let mut boost = 1;
+    loop {
+        let mut groups = ArmyGroup::parse(input_string);
+        for g in groups.iter_mut() {
+            if g.immune_system {
+                g.attack_damage += boost;
+            }
+        }
+
+        let groups = execute_battle(groups);
+
+        if groups.iter().find(|g| !g.borrow().immune_system).is_none() {
+            return groups
+                .iter()
+                .fold(0, |acc, g| acc + g.borrow().units)
+                .to_string();
+        }
+
+        boost += 1;
+    }
 }
 
 #[test]
@@ -221,9 +253,6 @@ Infection:
 }
 
 #[test]
-#[ignore]
 fn tests_part2() {
-    assert_eq!("", part2(""));
-
-    assert_eq!("", part2(include_str!("day24_input.txt")));
+    assert_eq!("862", part2(include_str!("day24_input.txt")));
 }
