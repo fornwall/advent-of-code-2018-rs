@@ -92,8 +92,10 @@ pub fn part2(input_string: &str) -> String {
 
                     // "Find the coordinates that are in range of the largest number of nanobots.
                     // What is the shortest manhattan distance between any of those points and 0,0,0?"
-                    if bots_within_range > best_bots_within_range ||
-                        (bots_within_range == best_bots_within_range && distance_from_origin < best_distance) {
+                    if bots_within_range > best_bots_within_range
+                        || (bots_within_range == best_bots_within_range
+                            && distance_from_origin < best_distance)
+                    {
                         best_bots_within_range = bots_within_range;
                         best_distance = distance_from_origin;
                         best_point = (x, y, z);
