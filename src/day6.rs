@@ -106,13 +106,9 @@ pub fn part2_param(input_string: &str, max_distance_exclusive: i32) -> i32 {
 
     for y in top..=bottom {
         for x in left..=right {
-            let mut total_distance = 0;
-
-            for point in points.iter() {
-                let distance = (x - point.x).abs() + (y - point.y).abs();
-                total_distance += distance;
-            }
-
+            let total_distance = points.iter().fold(0, |acc, point| {
+                acc + (x - point.x).abs() + (y - point.y).abs()
+            });
             if total_distance < max_distance_exclusive {
                 sum += 1;
             }
