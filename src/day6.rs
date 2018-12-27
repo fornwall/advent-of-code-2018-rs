@@ -1,5 +1,5 @@
 use std::cmp;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 struct Point {
     id: i32,
@@ -35,7 +35,6 @@ pub fn part1(input_string: &str) -> String {
     );
 
     let mut id_to_count = HashMap::new();
-    let mut points_at_edges = HashSet::new();
 
     for y in top..=bottom {
         for x in left..=right {
@@ -54,22 +53,17 @@ pub fn part1(input_string: &str) -> String {
             }
 
             if x == left || x == right || y == top || y == bottom {
-                points_at_edges.insert(closest_point_id);
+                // These points have infinite area, so do not count them:
+                id_to_count.remove(&closest_point_id);
+            } else {
+                *id_to_count.entry(closest_point_id).or_insert(0) += 1;
             }
-
-            *id_to_count.entry(closest_point_id).or_insert(0) += 1;
         }
     }
 
     id_to_count
         .iter()
-        .max_by_key(|(&key, &value)| {
-            if points_at_edges.contains(&key) {
-                -1
-            } else {
-                value
-            }
-        })
+        .max_by_key(|(_, &value)| value)
         .unwrap()
         .1
         .to_string()
