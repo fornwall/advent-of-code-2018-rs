@@ -73,9 +73,7 @@ pub fn part1(input_string: &str) -> String {
     let mut visited: HashSet<char> = HashSet::new();
     let mut result = String::new();
 
-    while !queue.is_empty() {
-        let step = queue.pop().unwrap();
-
+    while let Some(step) = queue.pop() {
         if visited.contains(&step.name) {
             continue;
         };
@@ -172,8 +170,7 @@ pub fn part2_param(input_string: &str, workers: usize, step_duration_base: i32) 
     let mut result = String::new();
 
     let mut latest_work_done_at = 0;
-    while !work_queue.is_empty() {
-        let work_done = work_queue.pop().unwrap();
+    while let Some(work_done) = work_queue.pop() {
         // println!("Step {} done at time {}", work_done.name, work_done.done_at_second);
         latest_work_done_at = work_done.done_at_second;
 
