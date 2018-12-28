@@ -123,14 +123,9 @@ impl Board {
 
         for y in 0..self.height {
             for x in 0..self.width {
-                let cell = self.at(x, y);
-                match *cell {
-                    MapCell::Open => {}
-                    MapCell::Wall => {}
-                    MapCell::Unit { even, elf, .. } => {
-                        if even == even_round {
-                            self.attack_or_move_towards(x, y, !elf);
-                        }
+                if let MapCell::Unit { even, elf, .. } = *self.at(x, y) {
+                    if even == even_round {
+                        self.attack_or_move_towards(x, y, !elf);
                     }
                 }
             }
@@ -142,8 +137,7 @@ impl Board {
         let mut target_position = (0, 0);
 
         for (dx, dy) in [(0, -1i32), (-1i32, 0), (1, 0), (0, 1)].iter() {
-            let target_x = x as i32 + *dx;
-            let target_y = y as i32 + *dy;
+            let (target_x, target_y) = (x as i32 + *dx, y as i32 + *dy);
             if let MapCell::Unit {
                 hit_points, elf, ..
             } = self.at(target_x as u32, target_y as u32)
@@ -188,11 +182,12 @@ impl Board {
             return;
         }
 
+        if let MapCell::Unit { ref mut even, .. } = self.at(x, y) {
+            *even = !*even;
+        }
+
         // Attack.
         if self.attack(x, y, elf_target) {
-            if let MapCell::Unit { ref mut even, .. } = self.at(x, y) {
-                *even = !*even;
-            }
             return;
         }
 
@@ -200,66 +195,53 @@ impl Board {
         let (closest_distance, nx, ny) = self.shortest_distance(x, y, elf_target);
 
         if closest_distance != std::u32::MAX {
-            let mut cell_value = *self.at(x, y);
-            if let MapCell::Unit { ref mut even, .. } = cell_value {
-                *even = !*even;
-            }
-
+            let cell_value = *self.at(x, y);
             self.put(nx, ny, cell_value);
             self.put(x, y, MapCell::Open);
-
             // Attack from new position if possible.
             self.attack(nx, ny, elf_target);
-
             return;
-        }
-
-        if let MapCell::Unit { ref mut even, .. } = self.at(x, y) {
-            *even = !*even;
         }
     }
 
     fn shortest_distance(&mut self, sx: u32, sy: u32, elf_target: bool) -> (u32, u32, u32) {
         let mut to_visit = VecDeque::new();
-
         to_visit.push_back((0i32, sx, sy, 0, 0));
-        for element in self.visited.iter_mut() {
-            *element = false;
-        }
+
+        self.visited.iter_mut().for_each(|element| *element = false);
         self.visited[(sx + self.width * sy) as usize] = true;
 
         while let Some(visiting) = to_visit.pop_front() {
-            let cost = visiting.0 + 1;
-            let visiting_x = visiting.1 as u32;
-            let visiting_y = visiting.2 as u32;
+            let (cost, visiting_x, visiting_y) =
+                (visiting.0 + 1, visiting.1 as u32, visiting.2 as u32);
 
             for (nx, ny) in [(0, -1i32), (-1i32, 0), (1, 0), (0, 1)].iter() {
                 let x = (visiting_x as i32 + *nx) as u32;
                 let y = (visiting_y as i32 + *ny) as u32;
 
-                if let MapCell::Unit { elf, .. } = self.at(x, y) {
-                    if *elf == elf_target {
+                match self.at(x, y) {
+                    MapCell::Unit { elf, .. } if *elf == elf_target => {
                         return (cost as u32, visiting.3, visiting.4);
-                    };
-                };
+                    }
+                    MapCell::Open => {
+                        if !self.visited[(x + y * self.height) as usize] {
+                            self.visited[(x + y * self.height) as usize] = true;
+                            let first_x: u32;
+                            let first_y: u32;
+                            if visiting_x == sx && visiting_y == sy {
+                                // Initial step.
+                                first_x = x;
+                                first_y = y;
+                            } else {
+                                // Propagate initial step.
+                                first_x = visiting.3;
+                                first_y = visiting.4;
+                            };
 
-                if let MapCell::Open = self.at(x, y) {
-                    if !self.visited[(x + y * self.height) as usize] {
-                        self.visited[(x + y * self.height) as usize] = true;
-                        let first_x: u32;
-                        let first_y: u32;
-                        if visiting_x == sx && visiting_y == sy {
-                            // Initial step.
-                            first_x = x;
-                            first_y = y;
-                        } else {
-                            // Propagate initial step.
-                            first_x = visiting.3;
-                            first_y = visiting.4;
+                            to_visit.push_back((cost, x, y, first_x, first_y));
                         };
-
-                        to_visit.push_back((cost, x, y, first_x, first_y));
-                    };
+                    }
+                    _ => {}
                 }
             }
         }
