@@ -4,8 +4,8 @@ set -e -u
 wasm-pack build --target browser --out-dir target/browser
 
 cd wasm/html
-# rm -Rf node_modules package-lock.json
-# npm install
+rm -Rf node_modules package-lock.json
+npm install
 webpack --config webpack.config.js
 
 echo "wasm/html/dist/ has been created"
