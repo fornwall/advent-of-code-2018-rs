@@ -228,7 +228,7 @@ pub fn part2(input_string: &str) -> String {
 
         let groups = execute_battle(groups);
 
-        if groups.iter().find(|g| !g.borrow().immune_system).is_none() {
+        if groups.iter().all(|g| g.borrow().immune_system) {
             return groups
                 .iter()
                 .fold(0, |acc, g| acc + g.borrow().units)
