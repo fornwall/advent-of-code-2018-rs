@@ -86,7 +86,7 @@ impl Grid {
             y * 48271
         } else {
             // Otherwise, the region's geologic index is the result of multiplying the erosion levels of the regions at X-1,Y and X,Y-1:
-;            self.erosion_level(x - 1, y) * self.erosion_level(x, y - 1)
+            self.erosion_level(x - 1, y) * self.erosion_level(x, y - 1)
         };
         self.cache.insert((x, y), value);
         value
