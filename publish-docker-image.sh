@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e -u
 
-docker run --rm -v "$(pwd)":/build fredrikfornwall/rust-static-builder-nightly
+docker run --rm -v "$(pwd)":/build fredrikfornwall/rust-static-builder
 
 docker build -t fredrikfornwall/advent-of-code-2018-rs .
 
