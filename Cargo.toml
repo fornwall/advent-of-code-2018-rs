@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 
 [profile.release]
 lto = true
+codegen-units = 1
 panic = 'abort'
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
