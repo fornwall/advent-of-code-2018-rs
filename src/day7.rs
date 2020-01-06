@@ -74,19 +74,16 @@ pub fn part1(input_string: &str) -> String {
     let mut result = String::new();
 
     while let Some(step) = queue.pop() {
-        if visited.contains(&step.name) {
-            continue;
-        };
+        if visited.insert(step.name) {
+            result.push(step.name);
 
-        result.push(step.name);
-        visited.insert(step.name);
-
-        for needed_by_name in step.needed_by.iter().rev() {
-            let v = remaining_dependencies.get_mut(&needed_by_name).unwrap();
-            v.remove(&step.name);
-            if v.is_empty() {
-                queue.push(&step_map[&needed_by_name]);
-            };
+            for needed_by_name in step.needed_by.iter().rev() {
+                let v = remaining_dependencies.get_mut(&needed_by_name).unwrap();
+                v.remove(&step.name);
+                if v.is_empty() {
+                    queue.push(&step_map[&needed_by_name]);
+                };
+            }
         }
     }
 
