@@ -15,6 +15,7 @@ impl Fabric {
             num_claims: vec![0; 1_000_000],
         }
     }
+
     fn add_claim(&mut self, claim: &Claim) {
         for y in claim.y..claim.y + claim.height {
             let row_offset = y * 1000;
@@ -23,9 +24,11 @@ impl Fabric {
             }
         }
     }
+
     fn inches_claimed_multiple(&self) -> usize {
         self.num_claims.iter().filter(|&&c| c > 1).count()
     }
+
     fn is_claimed_once(&self, claim: &Claim) -> bool {
         let mut result = true;
         for y in claim.y..claim.y + claim.height {
