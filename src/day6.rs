@@ -1,4 +1,5 @@
 use std::cmp;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 struct Point {
@@ -44,11 +45,15 @@ pub fn part1(input_string: &str) -> String {
             for point in points.iter() {
                 let distance = (x - point.x).abs() + (y - point.y).abs();
 
-                if distance < closest_distance {
-                    closest_distance = distance;
-                    closest_point_id = point.id;
-                } else if distance == closest_distance {
-                    closest_point_id = -1;
+                match distance.cmp(&closest_distance) {
+                    Ordering::Greater => {}
+                    Ordering::Less => {
+                        closest_distance = distance;
+                        closest_point_id = point.id;
+                    }
+                    Ordering::Equal => {
+                        closest_point_id = -1;
+                    }
                 };
             }
 
