@@ -1,3 +1,6 @@
+# OUTDATED
+See https://github.com/fornwall/advent-of-code instead.
+
 [![Build Status](https://travis-ci.org/fornwall/advent-of-code-2018-rs.svg?branch=master)](https://travis-ci.org/fornwall/advent-of-code-2018-rs)
 
 # Advent of Code 2018 in Rust
