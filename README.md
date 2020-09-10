@@ -20,18 +20,6 @@ There is also a Docker image published for running the tests:
     curl https://public.infinisil.com/aoc18/day2/10000.txt | \
         docker run -i fredrikfornwall/advent-of-code-2018-rs:latest 2 2
 
-# Running using Node.js
-As a proof of concept, an [npm module](https://www.npmjs.com/package/advent_of_code_rs) is available which uses WebAssembly to execute the solution:
-
-    # Installation:
-    npm install advent_of_code_rs_bin -g
-
-    # Invocation:
-    advent-of-code-rs <day> <part> < path/to/input.txt
-
-# Running in the browser
-As another proof of concept the solution can run inside the browser at https://fornwall.net/advent-of-code-2018/.
-
 # Days
 | Puzzle                                         | Solution                     | Alternatives |
 | ---------------------------------------------- | ---------------------------- | ------------ |
